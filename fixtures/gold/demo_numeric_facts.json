@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "Numeric values expected to be extracted as structured facts. Used to validate Phase 3 rate-recomputation and CI-parsing checkers and to drive cross-document agreement tests.",
+  "expected_numeric_facts": [
+    {
+      "gold_id": "GOLD-NUM-001",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_b0fecd4907e13acc",
+      "value": 87.4,
+      "unit": "percent",
+      "denominator": 412,
+      "confidence_interval": {
+        "lower": 82.1,
+        "upper": 91.6,
+        "level": 0.95
+      },
+      "p_value": null,
+      "label": "primary_endpoint_response_rate_12_months",
+      "rationale": "Pivotal study endpoint in CER body. Triplet (value, CI, denominator) all present in the same span. Anchors NT-001 cross-document agreement and recomputation checks.",
+      "notes": "412 patients is the denominator implied by 'in 412 patients'. The 'at 12 months' qualifier should be captured as a temporal modifier, not silently dropped."
+    },
+    {
+      "gold_id": "GOLD-NUM-002",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_8c8ef5d659e6ba6d",
+      "value": 3.2,
+      "unit": "percent",
+      "denominator": 412,
+      "confidence_interval": null,
+      "p_value": null,
+      "label": "adverse_event_rate_safety_population",
+      "rationale": "Adverse event rate in CER body. Has denominator but no explicit CI. Anchors NT-002 cross-document agreement.",
+      "notes": "Population descriptor is 'safety population (n=412)' in CER vs 'n=412 cohort' in source-study. Same n but different wording — a candidate for ECO-ALIGN if alignment is required to be lexical."
+    },
+    {
+      "gold_id": "GOLD-NUM-003",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_f2d247fb17db6de0",
+      "value": 87.4,
+      "unit": "percent",
+      "denominator": null,
+      "confidence_interval": null,
+      "p_value": null,
+      "label": "primary_endpoint_response_rate_table_cell",
+      "rationale": "Appendix A table mirror of GOLD-NUM-001. No denominator or CI in the cell itself — only the bare value.",
+      "notes": "Phase 3 should treat this as the same fact as GOLD-NUM-001 (table-cell mirror), not as a contradicting independent measurement."
+    },
+    {
+      "gold_id": "GOLD-NUM-004",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_cddf2fa99a826279",
+      "value": 3.2,
+      "unit": "percent",
+      "denominator": null,
+      "confidence_interval": null,
+      "p_value": null,
+      "label": "adverse_event_rate_table_cell",
+      "rationale": "Appendix A table mirror of GOLD-NUM-002.",
+      "notes": "Same fact as GOLD-NUM-002, not an independent value."
+    },
+    {
+      "gold_id": "GOLD-NUM-005",
+      "document_id": "doc_faf32261b7e7f62a",
+      "span_id": "span_34348cc49f123629",
+      "value": 87.4,
+      "unit": "percent",
+      "denominator": null,
+      "confidence_interval": null,
+      "p_value": null,
+      "label": "primary_endpoint_response_rate_source_study",
+      "rationale": "Source-study page 1 mirror. Same numeric value as GOLD-NUM-001 with different wording ('87.4 percent' vs '87.4%').",
+      "notes": "Drives NT-001 (cross-document agreement should NOT fire ECO-NUM)."
+    },
+    {
+      "gold_id": "GOLD-NUM-006",
+      "document_id": "doc_faf32261b7e7f62a",
+      "span_id": "span_d5adf35599369595",
+      "value": 3.2,
+      "unit": "percent",
+      "denominator": 412,
+      "confidence_interval": {
+        "lower": 82.1,
+        "upper": 91.6,
+        "level": 0.95
+      },
+      "p_value": null,
+      "label": "adverse_event_rate_source_study",
+      "rationale": "Source-study page 2 mirror of GOLD-NUM-002. Same value AND same denominator. The CI 82.1-91.6 is reported on this page but it semantically belongs to the response rate (GOLD-NUM-001), not the adverse event rate — this is a known textual ambiguity in the seed fixture.",
+      "notes": "The CI co-occurrence here is a TRAP for naive parsers. A robust extractor should NOT bind '82.1-91.6 CI' to the 3.2% rate on the same page. Surfaces as GOLD-FINDING-004 (ambiguous CI binding, malformed structure)."
+    }
+  ],
+  "uncertainty_notes": [
+    "GOLD-NUM-006 contains a deliberate textual ambiguity in the seed PDF (CI of the response rate appears on the same page as the adverse-event rate). Phase 2/3 must either bind the CI to its correct rate or refuse to bind it and emit ECO-MALFORMED. Silent mis-binding is the failure mode to catch."
+  ]
+}

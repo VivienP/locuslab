@@ -1,0 +1,17 @@
+LocusLab Engine
+Copyright 2026 LocusLab contributors
+
+This product is licensed under the Apache License, Version 2.0.
+See the LICENSE file.
+
+The Apache License applies to original software, tests, scripts, and
+documentation authored for this project. It does **not** apply to third-party
+regulatory texts, PDFs, or extracts stored under docs/guidance/sources/.
+
+Those files remain subject to the rights of their issuers (European Union,
+European Commission, Medical Device Coordination Group, and others). See
+docs/THIRD_PARTY.md for per-file attribution, recorded SHA-256 hashes, and
+lookup URLs.
+
+This NOTICE is for attribution only and does not modify the Apache License.
+It is not legal advice and is not a grant of rights in third-party materials.

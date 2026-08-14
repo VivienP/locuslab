@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "Claim candidates the Phase 2 extractor should surface from the demo dossier. Used to measure claim_candidate_recall and claim_candidate_precision per ClaimType once extraction exists.",
+  "scope_notes": [
+    "Annotated against the real spans listed in demo_spans.json.",
+    "Coverage is intentionally selective: enough to validate the Phase 2 vertical slice, not exhaustive.",
+    "claim_type values mirror src/locuslab/models.py::ClaimType: numeric, citation, clinical_performance, safety, benefit_risk, completeness, classification, other.",
+    "text_fragment is a substring expected to appear in the span text; not an exact match requirement."
+  ],
+  "expected_claims": [
+    {
+      "gold_id": "GOLD-CLAIM-001",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_a3d42d0561575263",
+      "claim_type": "classification",
+      "text_fragment": "Class IIa active medical device",
+      "expected_confidence_label": "high",
+      "rationale": "Device description paragraph asserts MDR risk-class classification (Class IIa, active). Deterministic regex over span text is sufficient to surface this.",
+      "phase_3_link": "Classification rationale is regulatory-judgment territory; expect ECO-MANUAL flag for adjudication (see GOLD-FINDING-005)."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-002",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_a3d42d0561575263",
+      "claim_type": "clinical_performance",
+      "text_fragment": "continuous non-invasive monitoring in adult patients",
+      "expected_confidence_label": "medium",
+      "rationale": "Intended-use statement. Should be surfaced as a clinical_performance claim, but with no numeric anchor it cannot resolve to a deterministic verdict — manual review territory."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-003",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_b0fecd4907e13acc",
+      "claim_type": "clinical_performance",
+      "text_fragment": "primary endpoint response rate of 87.4%",
+      "expected_confidence_label": "high",
+      "rationale": "Pivotal study endpoint statement. High-priority claim: it is numeric, citation-bearing, and has a corresponding source passage in source-study.pdf. Drives GOLD-EVIDENCE-001."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-004",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_b0fecd4907e13acc",
+      "claim_type": "numeric",
+      "text_fragment": "87.4% (95% CI: 82.1-91.6)",
+      "expected_confidence_label": "high",
+      "rationale": "Same span carries a numeric claim with a 95% CI. Anchors GOLD-NUM-001 and the cross-document agreement negative test."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-005",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_b0fecd4907e13acc",
+      "claim_type": "citation",
+      "text_fragment": "Smith et al., 2023",
+      "expected_confidence_label": "high",
+      "rationale": "In-text citation mention in author-year format. Should resolve to bibliography/source-study.pdf (Smith J. et al. 2023). Drives GOLD-CITE-001 and GOLD-EVIDENCE-001."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-006",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_8c8ef5d659e6ba6d",
+      "claim_type": "safety",
+      "text_fragment": "Adverse event rate was 3.2%",
+      "expected_confidence_label": "high",
+      "rationale": "Safety claim with numeric anchor and population (n=412). Cross-document agreement with source-study.pdf page 2 (GOLD-NUM-002)."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-007",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_8c8ef5d659e6ba6d",
+      "claim_type": "numeric",
+      "text_fragment": "3.2%",
+      "expected_confidence_label": "high",
+      "rationale": "Numeric facet of the safety claim. Denominator n=412 visible in the same span."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-008",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_05f0a0e4c6224e9f",
+      "claim_type": "benefit_risk",
+      "text_fragment": "benefit-risk profile of DemoDevice X100 is considered acceptable",
+      "expected_confidence_label": "medium",
+      "rationale": "Benefit-risk conclusion sentence. Carries an orphan citation marker [1] that does NOT resolve to any bibliography entry — see GOLD-CITE-002 and GOLD-FINDING-002."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-009",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_f2d247fb17db6de0",
+      "claim_type": "numeric",
+      "text_fragment": "87.4%",
+      "expected_confidence_label": "high",
+      "rationale": "Appendix A table cell mirror of GOLD-CLAIM-004. Cross-cell numeric claim. Same value as CER body and source-study; the table-cell vs body-paragraph duplicate is intentional for table-extraction recall testing."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-010",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_cddf2fa99a826279",
+      "claim_type": "numeric",
+      "text_fragment": "3.2%",
+      "expected_confidence_label": "high",
+      "rationale": "Appendix A table cell mirror of GOLD-CLAIM-007. Table-extraction recall target."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-011",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_f806d14a167a8098",
+      "claim_type": "citation",
+      "text_fragment": "Smith 2023",
+      "expected_confidence_label": "high",
+      "rationale": "Table-cell citation form (no parentheses or 'et al.'). Should still resolve to Smith J. et al. (2023) in source-study.pdf via author-year normalization."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-012",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "span_id": "span_b4c87ceb0705b8d7",
+      "claim_type": "citation",
+      "text_fragment": "Smith 2023",
+      "expected_confidence_label": "high",
+      "rationale": "Second appearance of the same author-year citation in Appendix A. Used to test citation normalization across multiple mentions."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-013",
+      "document_id": "doc_faf32261b7e7f62a",
+      "span_id": "span_34348cc49f123629",
+      "claim_type": "numeric",
+      "text_fragment": "87.4 percent at 12 months",
+      "expected_confidence_label": "high",
+      "rationale": "Source-study mirror of the CER pivotal endpoint. Same value, different wording ('percent' vs '%'). Anchors the agreement negative test NT-001."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-014",
+      "document_id": "doc_faf32261b7e7f62a",
+      "span_id": "span_d5adf35599369595",
+      "claim_type": "numeric",
+      "text_fragment": "3.2 percent of the n=412 cohort",
+      "expected_confidence_label": "high",
+      "rationale": "Source-study mirror of the CER adverse-event rate. Cross-document numeric agreement target (NT-002)."
+    },
+    {
+      "gold_id": "GOLD-CLAIM-015",
+      "document_id": "doc_84039664cf6a7d66",
+      "span_id": "span_f62adf8dc89ee97e",
+      "claim_type": "completeness",
+      "text_fragment": "Software lifecycle per IEC 62304",
+      "expected_confidence_label": "high",
+      "rationale": "GSPR-05 requirement. The companion D6/E6 cells (Evidence_Document, Status) are absent from the ingestion output because they are blank in the seed fixture — this is the planted completeness gap. Drives GOLD-FINDING-001."
+    }
+  ]
+}

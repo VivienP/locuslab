@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "Bibliography / source records the loader should detect. Each entry pins the source path, citation key, and the expected availability_status that Phase 2 should record on the resulting Source object.",
+  "availability_status_vocabulary": [
+    "local_fulltext",
+    "bibliography_only",
+    "unresolved",
+    "missing_file",
+    "cached_metadata"
+  ],
+  "expected_bibliography_entries": [
+    {
+      "gold_id": "GOLD-BIB-001",
+      "document_id": "doc_faf32261b7e7f62a",
+      "relative_path": "bibliography/source-study.pdf",
+      "citation_key": "smith_2023",
+      "human_citation": "Smith J. et al. (2023). Pivotal study of DemoDevice X100. J Med Devices 12(3):201-215.",
+      "expected_availability_status": "local_fulltext",
+      "spans_carrying_metadata": [
+        "span_34348cc49f123629",
+        "span_d5adf35599369595"
+      ],
+      "rationale": "Full-text PDF present locally and ingestable by pypdf. Both pages produce content spans. This is the canonical resolved-source case for demo_citations.json entries GOLD-CITE-001/003/004.",
+      "notes": "citation_key here is the expected normalized form (lowercase author + year), not a value the loader currently produces. Phase 2 will need to derive this from page 1 text."
+    }
+  ],
+  "expected_external_references": [
+    {
+      "gold_id": "GOLD-BIB-EXT-001",
+      "referenced_in_document_id": "doc_84039664cf6a7d66",
+      "referenced_in_span_id": "span_ecbca6c827a929d4",
+      "referenced_value": "PMS.docx",
+      "expected_availability_status": "missing_file",
+      "rationale": "GSPR-03 declares PMS.docx as Evidence_Document, but no PMS.docx exists in fixtures/demo_dossier/. This is a real cross-reference that does not resolve.",
+      "notes": "Not a failure of bibliography parsing; a failure of evidence-link resolution. Drives GOLD-EVIDENCE-003."
+    },
+    {
+      "gold_id": "GOLD-BIB-EXT-002",
+      "referenced_in_document_id": "doc_84039664cf6a7d66",
+      "referenced_in_span_id": "span_48f8fa48bdf57f24",
+      "referenced_value": "Labeling.pdf",
+      "expected_availability_status": "missing_file",
+      "rationale": "GSPR-04 declares Labeling.pdf as Evidence_Document with Status='Not Met'. The file is not present in fixtures/demo_dossier/. Cross-reference does not resolve.",
+      "notes": "Combined with the explicit 'Not Met' status, this is a softer signal than GSPR-05 (which is structurally incomplete). See GOLD-FINDING-006."
+    }
+  ],
+  "uncertainty_notes": [
+    "There is no bibliography index file in fixtures/demo_dossier/. The single source-study.pdf is discovered by directory walk, not by parsing a references list in CER.docx. Once a real bibliography parser is added, the citation_key derivation will need its own gold entries."
+  ]
+}

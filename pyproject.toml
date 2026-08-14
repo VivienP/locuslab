@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "locuslab-engine"
+version = "0.1.0"
+description = "Local-first MDR/IVDR evidence verification engine scaffolding."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+authors = [{ name = "LocusLab" }]
+dependencies = [
+  "python-docx>=1.1",
+  "pypdf>=4.0",
+  "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.10",
+  "pytest>=8",
+  "ruff>=0.6",
+  "types-openpyxl>=3.1",
+]
+# AGPL-deny: do NOT add pymupdf, pymupdf4llm, marker, or docling here.
+# They are AGPL-licensed and would be incompatible with Apache-2.0 distribution of this project.
+# pdfplumber (MIT) is the approved PDF extraction dependency for guidance sources.
+guidance-extract = [
+  "pdfplumber>=0.11",
+]
+
+[project.scripts]
+locus = "locuslab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"locuslab.resources" = ["docs/**/*.json", "docs/**/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"

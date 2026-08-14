@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "fixture_root": "fixtures/demo_dossier",
+  "seed_script_sha256": "b32f5deddc846bbd64ea9af0dab2fae565d642ed7dd550bb19f90e15104d892b",
+  "purpose": "Regression check on ingestion output. Each entry pins document_id, kind, parser, and warning count for the corresponding file under fixtures/demo_dossier/.",
+  "documents": [
+    {
+      "gold_id": "GOLD-DOC-001",
+      "document_id": "doc_faf32261b7e7f62a",
+      "kind": "SOURCE_PDF",
+      "relative_path": "bibliography/source-study.pdf",
+      "expected_parser": "pypdf",
+      "expected_parser_full": "pypdf:6.12.1",
+      "expected_parse_warning_count": 0,
+      "expected_span_count": 2,
+      "rationale": "Smith 2023 pivotal study PDF written by seed_demo_fixture.write_minimal_pdf with two pages of extractable text. Expected to ingest cleanly with one PAGE-kind span per page.",
+      "notes": "Underlying PDF is hand-crafted to be readable by pypdf without an OCR fallback; if a future fixture refresh switches to an image-only PDF, expected_span_count drops to 0 and EXTRACTION_NO_TEXT_LAYER warnings appear."
+    },
+    {
+      "gold_id": "GOLD-DOC-002",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "kind": "CER",
+      "relative_path": "CER.docx",
+      "expected_parser": "python-docx",
+      "expected_parser_full": "python-docx:1.2.0",
+      "expected_parse_warning_count": 0,
+      "expected_span_count": 18,
+      "rationale": "Clinical Evaluation Report containing 5 headings, 4 body paragraphs, and a 3x3 endpoint summary table = 5 + 4 + 9 = 18 spans.",
+      "notes": "Heading paragraphs are emitted as spans with section equal to their own text. The Appendix A section emits one heading span plus nine table-cell spans."
+    },
+    {
+      "gold_id": "GOLD-DOC-003",
+      "document_id": "doc_84039664cf6a7d66",
+      "kind": "GSPR_MAPPING",
+      "relative_path": "GSPR_mapping.xlsx",
+      "expected_parser": "openpyxl",
+      "expected_parser_full": "openpyxl:3.1.5",
+      "expected_parse_warning_count": 0,
+      "expected_span_count": 28,
+      "rationale": "GSPR mapping sheet with one header row (5 cells) and five data rows. GSPR-01..GSPR-04 contribute 5 cells each (20). GSPR-05 has only 3 non-empty cells because Evidence_Document and Status are intentionally blank. Total = 5 + 20 + 3 = 28.",
+      "notes": "The empty Evidence_Document and Status cells for GSPR-05 are dropped by xlsx_reader because openpyxl yields them as None. The completeness gap therefore shows up as absent spans, not as spans with empty text."
+    },
+    {
+      "gold_id": "GOLD-DOC-004",
+      "document_id": "doc_3be01493e3e2758a",
+      "kind": "OTHER",
+      "relative_path": "README.md",
+      "expected_parser": "unsupported-file",
+      "expected_parser_full": "unsupported-file",
+      "expected_parse_warning_count": 1,
+      "expected_span_count": 0,
+      "rationale": "README.md is a metadata-only file. No content reader is wired for .md; loader emits an UNSUPPORTED_FILE_TYPE parser warning and zero spans.",
+      "notes": "This is the only expected parser warning across the demo dossier. Any other warning in a run is a regression. The kind=OTHER inference confirms that infer_document_kind does not over-classify README files."
+    }
+  ]
+}

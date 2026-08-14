@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "In-text citation markers expected to be detected by the Phase 2 citation parser. Each entry pins the marker text, the source span, and the expected resolution status against demo_bibliography.json.",
+  "resolution_status_vocabulary": [
+    "resolved",
+    "source_unresolved",
+    "source_missing",
+    "manual_review_required"
+  ],
+  "expected_citations": [
+    {
+      "gold_id": "GOLD-CITE-001",
+      "source_document_id": "doc_1dd5a3cd674157b5",
+      "source_span_id": "span_b0fecd4907e13acc",
+      "marker_text": "(Smith et al., 2023)",
+      "marker_form": "author_year_parenthetical",
+      "expected_resolution_status": "resolved",
+      "expected_target_source_id": "GOLD-BIB-001",
+      "expected_target_document_id": "doc_faf32261b7e7f62a",
+      "rationale": "Author-year parenthetical citation in the CER pivotal study sentence. Should resolve to bibliography/source-study.pdf via author normalization ('Smith J. et al.' -> 'Smith').",
+      "notes": "Citation parser must tolerate the comma between author and year, and the 'et al.,' variant."
+    },
+    {
+      "gold_id": "GOLD-CITE-002",
+      "source_document_id": "doc_1dd5a3cd674157b5",
+      "source_span_id": "span_05f0a0e4c6224e9f",
+      "marker_text": "[1]",
+      "marker_form": "numeric_bracketed",
+      "expected_resolution_status": "source_unresolved",
+      "expected_target_source_id": null,
+      "expected_target_document_id": null,
+      "rationale": "Bracketed numeric citation in the benefit-risk conclusion. There is no numbered references list in CER.docx, and no [1] target appears in bibliography/. This is the planted unresolved-citation case.",
+      "notes": "Drives GOLD-FINDING-002. Conservative language: 'unresolved citation marker', not 'broken reference' or 'citation error'. The marker may or may not refer to Smith 2023; this is unknowable from the visible content and must remain unresolved."
+    },
+    {
+      "gold_id": "GOLD-CITE-003",
+      "source_document_id": "doc_1dd5a3cd674157b5",
+      "source_span_id": "span_f806d14a167a8098",
+      "marker_text": "Smith 2023",
+      "marker_form": "author_year_table_cell",
+      "expected_resolution_status": "resolved",
+      "expected_target_source_id": "GOLD-BIB-001",
+      "expected_target_document_id": "doc_faf32261b7e7f62a",
+      "rationale": "Author-year citation in the Appendix A table 'Source' column. Same target as GOLD-CITE-001 but with stripped formatting (no parentheses, no 'et al.').",
+      "notes": "Useful for testing citation normalization across formatting variants."
+    },
+    {
+      "gold_id": "GOLD-CITE-004",
+      "source_document_id": "doc_1dd5a3cd674157b5",
+      "source_span_id": "span_b4c87ceb0705b8d7",
+      "marker_text": "Smith 2023",
+      "marker_form": "author_year_table_cell",
+      "expected_resolution_status": "resolved",
+      "expected_target_source_id": "GOLD-BIB-001",
+      "expected_target_document_id": "doc_faf32261b7e7f62a",
+      "rationale": "Second appearance of the table-cell citation form (adverse event rate row). Same target as GOLD-CITE-003.",
+      "notes": "Multi-mention deduplication target: the same source should resolve consistently across all four mentions."
+    }
+  ],
+  "uncertainty_notes": [
+    "Citation [1] in the benefit-risk conclusion is INTENTIONALLY annotated as source_unresolved rather than 'resolves to Smith 2023'. The visible content gives no deterministic mapping from [1] to any specific bibliography entry. Forcing a resolution would violate no-confident-verdict-without-evidence."
+  ]
+}

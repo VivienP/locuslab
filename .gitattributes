@@ -1,0 +1,9 @@
+# Inventory SHA-256 (V-S7) hashes working-tree bytes. Keep source extracts
+# byte-stable across Windows and Unix checkouts.
+docs/guidance/sources/**/*.md text eol=lf
+docs/guidance/sources/**/*.txt text eol=lf
+docs/guidance/sources/**/*.html text eol=lf
+docs/guidance/sources/**/*.pdf binary
+docs/guidance/sources/**/*.json text eol=lf
+src/locuslab/resources/docs/**/*.md text eol=lf
+src/locuslab/resources/docs/**/*.json text eol=lf

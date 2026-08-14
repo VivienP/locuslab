@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "Coarse per-document and per-section span coverage. Regression check that catches structural changes in the readers (e.g., a refactor that drops table cells or merges paragraphs). NOT exhaustive span-by-span ground truth.",
+  "totals": {
+    "expected_total_spans": 48,
+    "expected_total_paragraph_spans": 9,
+    "expected_total_page_spans": 2,
+    "expected_total_table_cell_spans": 37
+  },
+  "per_document": [
+    {
+      "gold_id": "GOLD-SPANS-001",
+      "document_id": "doc_faf32261b7e7f62a",
+      "relative_path": "bibliography/source-study.pdf",
+      "expected_span_count": 2,
+      "expected_location_kinds": {"page": 2},
+      "expected_section_count": 0,
+      "notes": "PDF reader emits one page-kind span per page with extractable text. section is None for all PDF spans in Phase 1b (no PDF heading detection yet)."
+    },
+    {
+      "gold_id": "GOLD-SPANS-002",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "relative_path": "CER.docx",
+      "expected_span_count": 18,
+      "expected_location_kinds": {"paragraph": 9, "table_cell": 9},
+      "expected_section_count": 4,
+      "expected_sections": [
+        "Clinical Evaluation Report - DemoDevice X100",
+        "1. Device Description",
+        "2. Clinical Performance",
+        "3. Benefit-Risk Conclusion",
+        "Appendix A - Endpoint Summary Table"
+      ],
+      "notes": "Heading style names are emitted as paragraph spans whose section equals the heading text itself. Body paragraphs inherit the most-recent heading as section. Table cells inherit the Appendix A section."
+    },
+    {
+      "gold_id": "GOLD-SPANS-003",
+      "document_id": "doc_84039664cf6a7d66",
+      "relative_path": "GSPR_mapping.xlsx",
+      "expected_span_count": 28,
+      "expected_location_kinds": {"table_cell": 28},
+      "expected_section_count": 6,
+      "expected_sections": [
+        "GSPR:header",
+        "GSPR:header:A=GSPR_ID",
+        "GSPR:header:B=Requirement",
+        "GSPR:header:C=Applicable",
+        "GSPR:header:D=Evidence_Document",
+        "GSPR:header:E=Status"
+      ],
+      "notes": "Header row contributes 5 cells with section='GSPR:header'. Data cells in rows 2-5 contribute 5 each. Row 6 (GSPR-05) contributes only 3 cells because Evidence_Document and Status are blank — those cells are absent rather than present-with-empty-text."
+    },
+    {
+      "gold_id": "GOLD-SPANS-004",
+      "document_id": "doc_3be01493e3e2758a",
+      "relative_path": "README.md",
+      "expected_span_count": 0,
+      "expected_location_kinds": {},
+      "expected_section_count": 0,
+      "notes": "README.md has no content reader in Phase 1b. Zero spans, one parser warning."
+    }
+  ],
+  "per_section_anchors": [
+    {
+      "gold_id": "GOLD-SECTION-CER-CLINICAL-PERFORMANCE",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "section": "2. Clinical Performance",
+      "expected_span_count": 3,
+      "anchor_span_ids": [
+        "span_a8367094e2edbd3b",
+        "span_b0fecd4907e13acc",
+        "span_8c8ef5d659e6ba6d"
+      ],
+      "notes": "One heading + two body paragraphs (pivotal endpoint + adverse event rate). These are the main claim-bearing spans in the CER and are heavily referenced by demo_claims.json."
+    },
+    {
+      "gold_id": "GOLD-SECTION-CER-BENEFIT-RISK",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "section": "3. Benefit-Risk Conclusion",
+      "expected_span_count": 2,
+      "anchor_span_ids": [
+        "span_8aa270a7acaa4e1e",
+        "span_05f0a0e4c6224e9f"
+      ],
+      "notes": "Heading + the benefit-risk paragraph carrying the orphan citation marker [1]. See demo_citations.json GOLD-CITE-002 for the unresolved-marker case."
+    },
+    {
+      "gold_id": "GOLD-SECTION-CER-APPENDIX-A",
+      "document_id": "doc_1dd5a3cd674157b5",
+      "section": "Appendix A - Endpoint Summary Table",
+      "expected_span_count": 10,
+      "anchor_span_ids": [
+        "span_45c888f2d64592ca",
+        "span_e31a48f80aba3913",
+        "span_bca966dc1ddc3f45",
+        "span_3e48f3c1b8e8dc75",
+        "span_393b1aa62763c9a6",
+        "span_f2d247fb17db6de0",
+        "span_f806d14a167a8098",
+        "span_e0deb26012a527ef",
+        "span_cddf2fa99a826279",
+        "span_b4c87ceb0705b8d7"
+      ],
+      "notes": "One heading + 3 header cells + 6 data cells. The numeric value cells (span_f2d247fb17db6de0 = '87.4%' and span_cddf2fa99a826279 = '3.2%') anchor numeric facts in demo_numeric_facts.json."
+    }
+  ]
+}

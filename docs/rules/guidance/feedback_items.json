@@ -1,0 +1,5 @@
+{
+  "_schema_description": "Structured feedback loop input for rule pack maintenance. Consultants and users file items here; triage moves them into fixture additions, rule updates, or rejections. No self-learning model updates in V1.",
+  "_schema_version": "guidance.feedback.v1",
+  "feedback_items": []
+}

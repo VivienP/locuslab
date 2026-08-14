@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "annotation_date": "2026-05-22",
+  "purpose": "Expected claim-to-source links the Phase 2 evidence linker should produce. Statuses follow the EvidenceLink vocabulary plus explicit 'manual_review_required' for non-deterministic cases.",
+  "status_vocabulary": [
+    "resolved",
+    "source_unresolved",
+    "source_missing",
+    "manual_review_required"
+  ],
+  "linking_method_vocabulary": [
+    "explicit_citation",
+    "table_cell_reference",
+    "filename_reference",
+    "no_link_found"
+  ],
+  "expected_evidence_links": [
+    {
+      "gold_id": "GOLD-EVIDENCE-001",
+      "claim_gold_id": "GOLD-CLAIM-003",
+      "source_gold_id": "GOLD-BIB-001",
+      "expected_status": "resolved",
+      "expected_linking_method": "explicit_citation",
+      "rationale": "Pivotal endpoint claim ('87.4% response rate at 12 months') in CER.docx span_b0fecd4907e13acc has an explicit (Smith et al., 2023) citation that resolves to bibliography/source-study.pdf, which contains the same value on page 1. Direct evidence chain.",
+      "notes": "This is the canonical 'green' evidence link for the demo. If extraction succeeds end-to-end, this link should be the most visually compelling proof in the buyer demo."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-002",
+      "claim_gold_id": "GOLD-CLAIM-006",
+      "source_gold_id": "GOLD-BIB-001",
+      "expected_status": "resolved",
+      "expected_linking_method": "explicit_citation",
+      "rationale": "Safety claim ('Adverse event rate was 3.2%') in CER.docx span_8c8ef5d659e6ba6d has no in-line author-year citation, but the same n=412 cohort wording appears in source-study.pdf page 2. Resolution relies on cohort-size co-occurrence rather than a citation marker.",
+      "notes": "Lower-confidence than GOLD-EVIDENCE-001 because the link is inferred from population alignment, not from an explicit marker. Phase 2 may legitimately downgrade this to manual_review_required if the linker only trusts explicit citations."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-003",
+      "claim_gold_id": "GOLD-CLAIM-015",
+      "source_gold_id": null,
+      "expected_status": "source_missing",
+      "expected_linking_method": "no_link_found",
+      "rationale": "GSPR-05 'Software lifecycle per IEC 62304' has no Evidence_Document cell at all (blank in the seed fixture, absent from spans). No file path to attempt to resolve against. This is the planted completeness gap.",
+      "notes": "Drives GOLD-FINDING-001."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-004",
+      "claim_gold_id": "GOLD-CLAIM-008",
+      "source_gold_id": null,
+      "expected_status": "source_unresolved",
+      "expected_linking_method": "no_link_found",
+      "rationale": "Benefit-risk conclusion ('benefit-risk profile is acceptable') in CER.docx span_05f0a0e4c6224e9f cites '[1]' but the marker does not resolve to any local source. The claim is therefore unsupported by any deterministic chain.",
+      "notes": "Conservative language: 'potentially unsupported, requires manual review'. Drives GOLD-FINDING-003."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-005",
+      "claim_gold_id": "GOLD-CLAIM-001",
+      "source_gold_id": null,
+      "expected_status": "manual_review_required",
+      "expected_linking_method": "no_link_found",
+      "rationale": "Device classification ('Class IIa') is a regulatory judgment, not a citation-bearing claim. Even with a perfect linker, this should remain manual_review_required.",
+      "notes": "Drives GOLD-FINDING-005 (ECO-MANUAL informational). Severity stays Informational; no deterministic verdict possible."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-GSPR-03",
+      "claim_gold_id": null,
+      "source_gold_id": null,
+      "anchor_span_id": "span_ecbca6c827a929d4",
+      "expected_status": "source_missing",
+      "expected_linking_method": "filename_reference",
+      "rationale": "GSPR-03 references PMS.docx as Evidence_Document, but PMS.docx is not present in fixtures/demo_dossier/. The reference is structurally present but the file is missing.",
+      "notes": "Different from GOLD-EVIDENCE-003: here a filename IS declared, just unresolvable. Drives a future GSPR-evidence completeness check; severity is currently scoped as Minor in GOLD-FINDING-006 because Status='Met' is asserted despite the missing file."
+    },
+    {
+      "gold_id": "GOLD-EVIDENCE-GSPR-04",
+      "claim_gold_id": null,
+      "source_gold_id": null,
+      "anchor_span_id": "span_48f8fa48bdf57f24",
+      "expected_status": "source_missing",
+      "expected_linking_method": "filename_reference",
+      "rationale": "GSPR-04 references Labeling.pdf with Status='Not Met'. The file is missing, but the status field already acknowledges non-conformance — so the cross-doc finding is informational only.",
+      "notes": "See GOLD-FINDING-007. This is a softer case than GSPR-03 because the dossier itself flags the gap."
+    }
+  ],
+  "uncertainty_notes": [
+    "GOLD-EVIDENCE-002 (safety claim) is the riskiest annotation: the link is inferred, not cited. If Phase 2 cannot reliably distinguish co-occurrence from causation, this should be downgraded to manual_review_required rather than treated as a recall miss."
+  ]
+}
