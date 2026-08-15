@@ -169,6 +169,26 @@ class TestEvaluatorPatterns:
         e = evals["guidance.sscp.required_section.intended_purpose"]
         assert e["evaluation_status"] == EVALUATION_STATUS_OBSERVED
 
+    def test_non_sscp_spans_cannot_satisfy_sscp_rule(
+        self, rule_pack: dict[str, object]
+    ) -> None:
+        spans = [
+            _make_span("No matching heading.", doc_id="doc_sscp"),
+            _make_span(
+                "Intended purpose appears only in the CER.",
+                span_id="span_cer",
+                doc_id="doc_cer",
+            ),
+        ]
+        evals = evaluate_sscp_rules(
+            rule_pack=rule_pack,
+            spans=spans,
+            allowed_document_ids=frozenset({"doc_sscp"}),
+        )
+        e = evals["guidance.sscp.required_section.intended_purpose"]
+        assert e["evaluation_status"] == EVALUATION_STATUS_MISSING
+        assert e["evidence_matches"] == []
+
 
 class TestPipelineSkipsGuidanceForNonSscpDossier:
     def test_demo_dossier_emits_no_guidance(self, tmp_path: Path) -> None:

@@ -29,6 +29,7 @@ from locuslab.guidance.assets import (
 from locuslab.ingest import load_dossier
 from locuslab.linking.bibliography_resolver import BibliographyResolver
 from locuslab.linking.evidence_linker import EvidenceLinker
+from locuslab.models import DocumentKind
 from locuslab.output import write_findings_csv, write_jsonl
 from locuslab.report import write_report_package
 
@@ -147,6 +148,11 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
             guidance_evaluations = evaluate_sscp_rules(
                 rule_pack=guidance_rule_pack,
                 spans=spans,
+                allowed_document_ids=frozenset(
+                    document.document_id
+                    for document in documents
+                    if document.kind == DocumentKind.SSCP
+                ),
                 md_text_by_source_id=md_text_by_source_id,
             )
             artifact_counts["guidance_review_items"] = len(guidance_evaluations)

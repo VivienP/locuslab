@@ -14,7 +14,7 @@ See `docs/architecture.md` and `docs/LIMITATIONS.md`.
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping, Sequence, Set
 from typing import Any
 
 from locuslab.guidance.excerpt_anchor import locate_excerpt
@@ -115,9 +115,14 @@ def evaluate_sscp_rules(
     *,
     rule_pack: Mapping[str, Any],
     spans: Sequence[Span],
+    allowed_document_ids: Set[str] | None = None,
     md_text_by_source_id: Mapping[str, tuple[str, str]] | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Evaluate each rule in the pack; return rule_id -> evaluation dict.
+
+    When ``allowed_document_ids`` is provided, only spans belonging to those
+    documents may contribute evidence. The verification pipeline uses this
+    boundary to prevent non-SSCP dossier content from satisfying SSCP rules.
 
     Rules NOT in `_DETERMINISTIC_PATTERNS` are marked `not_evaluated` (the
     6 RA_pending SSCP rules in v0.3.0 fall here). Phase 6D scope is bounded
@@ -130,6 +135,11 @@ def evaluate_sscp_rules(
     Rules without an excerpt or without a corresponding .md remain
     `source_anchor: None`.
     """
+    scoped_spans = (
+        spans
+        if allowed_document_ids is None
+        else tuple(span for span in spans if span.document_id in allowed_document_ids)
+    )
     results: dict[str, dict[str, Any]] = {}
     for rule in rule_pack.get("rules", []) or []:
         if not isinstance(rule, Mapping):
@@ -145,7 +155,7 @@ def evaluate_sscp_rules(
                 "evidence_matches": None,
             }
         else:
-            evaluation = _evaluate_rule(rule_id, patterns, spans)
+            evaluation = _evaluate_rule(rule_id, patterns, scoped_spans)
 
         # Phase 6E proper: attach source_anchor when an .md is available
         # for the rule's source AND the rule carries an exact_excerpt.
