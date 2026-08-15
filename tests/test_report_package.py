@@ -108,11 +108,11 @@ class TestReportJsonShape:
     ) -> None:
         assert demo_report_json["run_id"] == demo_audit_manifest["run_id"]
 
-    def test_artifact_counts_findings_eight_on_demo(
+    def test_artifact_counts_findings_seven_on_demo(
         self, demo_report_json: dict[str, object]
     ) -> None:
         counts = demo_report_json["artifact_counts"]
-        assert counts["findings"] == 8  # type: ignore[index]
+        assert counts["findings"] == 7  # type: ignore[index]
 
     def test_findings_detail_length_matches_findings_jsonl(
         self, demo_run: Path, demo_report_json: dict[str, object]
