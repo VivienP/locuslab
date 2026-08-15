@@ -404,9 +404,36 @@ class TestCompletenessGating:
             section="GSPR:header:D=Evidence_Document",
         )
 
+    def _applicable_span(self, row: int, text: str) -> Span:
+        return Span(
+            span_id=f"span_applicable_{row}",
+            document_id="doc_gspr_test",
+            location=SpanLocation(
+                kind=SpanLocationKind.TABLE_CELL,
+                index=row * 5 + 1,
+                label=f"GSPR:C{row}",
+            ),
+            text=text,
+            section="GSPR:header:C=Applicable",
+        )
+
+    def _status_span(self, row: int, text: str) -> Span:
+        return Span(
+            span_id=f"span_status_{row}",
+            document_id="doc_gspr_test",
+            location=SpanLocation(
+                kind=SpanLocationKind.TABLE_CELL,
+                index=row * 5 + 3,
+                label=f"GSPR:E{row}",
+            ),
+            text=text,
+            section="GSPR:header:E=Status",
+        )
+
     def test_row_with_evidence_doc_does_not_emit_completeness(self, extractor):
         spans = [
             self._req_span(2, "Risk management process documented"),
+            self._applicable_span(2, "Yes"),
             self._evidence_span(2, "CER.docx"),
         ]
         claims = extractor.extract_claims(spans, [self._gspr_doc()])
@@ -418,6 +445,7 @@ class TestCompletenessGating:
     def test_row_without_evidence_doc_emits_completeness(self, extractor):
         spans = [
             self._req_span(6, "Software lifecycle per IEC 62304"),
+            self._applicable_span(6, "Yes"),
         ]
         claims = extractor.extract_claims(spans, [self._gspr_doc()])
         completeness = [c for c in claims if c.claim_type == ClaimType.COMPLETENESS]
@@ -428,15 +456,36 @@ class TestCompletenessGating:
     def test_mixed_rows_only_gapped_row_emits(self, extractor):
         spans = [
             self._req_span(2, "Risk management process documented"),
+            self._applicable_span(2, "Yes"),
             self._evidence_span(2, "CER.docx"),
             self._req_span(3, "Clinical evaluation according to Annex XIV"),
+            self._applicable_span(3, "Yes"),
             self._evidence_span(3, "CER.docx"),
             self._req_span(6, "Software lifecycle per IEC 62304"),
+            self._applicable_span(6, "Yes"),
         ]
         claims = extractor.extract_claims(spans, [self._gspr_doc()])
         completeness = [c for c in claims if c.claim_type == ClaimType.COMPLETENESS]
         assert len(completeness) == 1
         assert completeness[0].text == "Software lifecycle per IEC 62304"
+
+    @pytest.mark.parametrize(
+        ("applicable", "status"),
+        [("No", "Not Applicable"), ("Yes", "Not Applicable"), ("", "")],
+    )
+    def test_non_applicable_or_ambiguous_row_does_not_emit_completeness(
+        self, extractor, applicable: str, status: str
+    ):
+        spans = [self._req_span(7, "Requirement without evidence")]
+        if applicable:
+            spans.append(self._applicable_span(7, applicable))
+        if status:
+            spans.append(self._status_span(7, status))
+
+        claims = extractor.extract_claims(spans, [self._gspr_doc()])
+
+        completeness = [c for c in claims if c.claim_type == ClaimType.COMPLETENESS]
+        assert completeness == []
 
 
 class TestBibliographySuppression:

@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 
 import pytest
+from openpyxl import Workbook
 
 DEMO_DOSSIER = Path(__file__).parent.parent / "fixtures" / "demo_dossier"
 EXPECTED_JSONL_FILES = [
@@ -66,6 +67,29 @@ class TestOutputPathSafety:
 
         assert sentinel.read_bytes() == before
         assert not (output_dir / "claims.jsonl").exists()
+
+
+def test_not_applicable_gspr_row_does_not_emit_major_finding(tmp_path: Path) -> None:
+    from locuslab.pipeline import verify_dossier
+
+    dossier = tmp_path / "dossier"
+    dossier.mkdir()
+    workbook = Workbook()
+    worksheet = workbook.active
+    assert worksheet is not None
+    worksheet.title = "GSPR"
+    worksheet.append(
+        ["GSPR_ID", "Requirement", "Applicable", "Evidence_Document", "Status"]
+    )
+    worksheet.append(
+        ["GSPR-01", "Requirement intentionally not applicable", "No", "", "Not Applicable"]
+    )
+    workbook.save(dossier / "GSPR_mapping.xlsx")
+    run_dir = tmp_path / "run"
+
+    verify_dossier(dossier, run_dir)
+
+    assert (run_dir / "findings.jsonl").read_text(encoding="utf-8") == ""
 
 
 class TestJsonlFilesWellFormed:

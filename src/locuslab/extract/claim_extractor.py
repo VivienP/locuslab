@@ -61,6 +61,13 @@ from locuslab.models import (
 # Section pattern indicating a GSPR Evidence_Document column cell
 _GSPR_EVIDENCE_DOC_SECTION = re.compile(r"D=Evidence_Document", re.IGNORECASE)
 _GSPR_REQUIREMENT_SECTION = re.compile(r"B=Requirement", re.IGNORECASE)
+_GSPR_APPLICABLE_SECTION = re.compile(r"C=Applicable", re.IGNORECASE)
+_GSPR_STATUS_SECTION = re.compile(r"E=Status", re.IGNORECASE)
+
+_GSPR_APPLICABLE_VALUES = frozenset({"yes", "y", "true", "1", "applicable"})
+_GSPR_NOT_APPLICABLE_VALUES = frozenset(
+    {"no", "n", "false", "0", "not applicable", "n/a", "na"}
+)
 
 # Parse the trailing row number from a GSPR cell label, e.g. "GSPR:B5" -> 5.
 _GSPR_ROW_FROM_LABEL = re.compile(r"^[^:]+:[A-Z](\d+)$")
@@ -109,10 +116,12 @@ class ClaimExtractor:
 
     _citation_parser: CitationParser
     _gspr_rows_with_evidence_doc: frozenset[tuple[str, int]]
+    _gspr_applicable_rows: frozenset[tuple[str, int]]
 
     def __init__(self) -> None:
         self._citation_parser = CitationParser()
         self._gspr_rows_with_evidence_doc = frozenset()
+        self._gspr_applicable_rows = frozenset()
 
     def extract_claims(
         self,
@@ -125,6 +134,7 @@ class ClaimExtractor:
         """
         doc_map = {d.document_id: d for d in documents}
         self._gspr_rows_with_evidence_doc = _compute_gspr_rows_with_evidence_doc(spans)
+        self._gspr_applicable_rows = _compute_gspr_applicable_rows(spans)
         claims: list[Claim] = []
         for span in spans:
             doc = doc_map.get(span.document_id)
@@ -635,10 +645,12 @@ class ClaimExtractor:
     def _extract_completeness(self, span: Span, doc: Document | None) -> list[Claim]:
         """Extract completeness claims for GSPR rows with no Evidence_Document cell.
 
-        Fires only on a Requirement (column B) whose row has no Evidence_Document (column D).
-        The xlsx_reader drops empty cells, so an absent D-column on a B-column row is the signal.
-        Rows with a declared Evidence_Document — even an unresolvable one — are out of scope here.
-        That case is a Phase 3 source-availability concern, not a Phase 2 completeness claim.
+        Fires only on a Requirement (column B) whose row is explicitly applicable
+        (column C), is not marked Not Applicable in Status (column E), and has no
+        Evidence_Document (column D). The xlsx_reader drops empty cells, so an
+        absent D-column on an eligible B-column row is the signal. Rows with a
+        declared Evidence_Document — even an unresolvable one — are handled by
+        the source-availability checker.
         """
         if doc is None or doc.kind != DocumentKind.GSPR_MAPPING:
             return []
@@ -651,7 +663,10 @@ class ClaimExtractor:
         row_number = _row_number_from_label(span.location.label)
         if row_number is None:
             return []
-        if (span.document_id, row_number) in self._gspr_rows_with_evidence_doc:
+        row_key = (span.document_id, row_number)
+        if row_key not in self._gspr_applicable_rows:
+            return []
+        if row_key in self._gspr_rows_with_evidence_doc:
             return []
         normalized = _normalize_text(text)
         claim_id = make_claim_id(
@@ -696,3 +711,28 @@ def _compute_gspr_rows_with_evidence_doc(
             continue
         rows.add((span.document_id, row_number))
     return frozenset(rows)
+
+
+def _compute_gspr_applicable_rows(
+    spans: Sequence[Span],
+) -> frozenset[tuple[str, int]]:
+    applicability_by_row: dict[tuple[str, int], str] = {}
+    status_by_row: dict[tuple[str, int], str] = {}
+    for span in spans:
+        row_number = _row_number_from_label(span.location.label)
+        if row_number is None:
+            continue
+        row_key = (span.document_id, row_number)
+        section = span.section or ""
+        value = _normalize_text(span.text)
+        if _GSPR_APPLICABLE_SECTION.search(section):
+            applicability_by_row[row_key] = value
+        elif _GSPR_STATUS_SECTION.search(section):
+            status_by_row[row_key] = value
+
+    return frozenset(
+        row_key
+        for row_key, value in applicability_by_row.items()
+        if value in _GSPR_APPLICABLE_VALUES
+        and status_by_row.get(row_key) not in _GSPR_NOT_APPLICABLE_VALUES
+    )
