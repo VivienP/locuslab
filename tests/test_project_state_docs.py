@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -59,6 +60,36 @@ def test_public_scope_descriptions_match_the_shipped_mdr_ivdr_surface() -> None:
     architecture = Path("docs/architecture.md").read_text(encoding="utf-8")
     assert "LocusLab V1 is MDR/IVDR-specific" in architecture
     assert "no cross-domain compatibility is claimed" in architecture
+
+
+def test_regression_corpus_contains_data_not_work_session_notes() -> None:
+    regression_root = Path("eval/regressions")
+    stale_names = {"doc_updates.md", "notes.md", "test_plan.md"}
+
+    assert not [
+        path for path in regression_root.rglob("*") if path.name in stale_names
+    ]
+
+    regression_files = sorted(regression_root.rglob("regression.jsonl"))
+    assert regression_files
+    for path in regression_files:
+        records = [
+            json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        assert records, path
+
+
+def test_third_party_inventory_has_no_work_session_labels() -> None:
+    source = Path("docs/THIRD_PARTY.md").read_text(encoding="utf-8")
+    packaged = Path("src/locuslab/resources/docs/THIRD_PARTY.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert source == packaged
+    assert "WS6" not in source
+    assert "workstream" not in source.lower()
 
 
 def test_project_state_doc_checker_detects_stale_phase_text(tmp_path: Path) -> None:

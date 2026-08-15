@@ -22,8 +22,8 @@ TEAM-NB documents are **not** included. The inventory entry
 
 ## Recorded sources
 
-URLs below are public lookup locators recorded at WS6. They were not downloaded
-in this workstream and are not SHA-verified against the remote object.
+URLs below are public lookup locators. The locally recorded SHA-256 values
+identify committed copies and do not attest to the current remote objects.
 
 ### MDCG 2019-9 Rev.1 (SSCP)
 
@@ -96,7 +96,7 @@ Declared in `pyproject.toml` (not vendored):
 Do **not** add AGPL PDF stacks (`pymupdf`, `pymupdf4llm`, `marker`, `docling`)
 to this project.
 
-## Replacement strategy (not implemented in WS6)
+## Replacement strategy
 
 A future packet may replace committed binaries with a fetch script plus the
 SHA-256 values above. Until then, keep the local files so offline tests and
