@@ -9,6 +9,9 @@ redistributing these files outside this repository. Local SHA-256 values are
 hashes of the committed bytes; they are **not** a proof that a remote URL still
 serves an identical file.
 
+This inventory and its packaged copy are pinned to LF because packaging tests
+compare their bytes exactly.
+
 TEAM-NB documents are **not** included. The inventory entry
 `team-nb-sscp-interpretation` stays `not_uploaded`.
 

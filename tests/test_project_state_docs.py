@@ -47,6 +47,7 @@ def test_public_scope_descriptions_match_the_shipped_mdr_ivdr_surface() -> None:
     scoped_paths = (
         Path("pyproject.toml"),
         Path("docs/architecture.md"),
+        Path("docs/engineering_contract.md"),
         Path("src/locuslab/__init__.py"),
         Path("src/locuslab/models.py"),
         Path("src/locuslab/extract/claim_extractor.py"),
@@ -60,6 +61,45 @@ def test_public_scope_descriptions_match_the_shipped_mdr_ivdr_surface() -> None:
     architecture = Path("docs/architecture.md").read_text(encoding="utf-8")
     assert "LocusLab V1 is MDR/IVDR-specific" in architecture
     assert "no cross-domain compatibility is claimed" in architecture
+
+    contract = Path("docs/engineering_contract.md").read_text(encoding="utf-8")
+    assert "LocusLab V1 is MDR/IVDR-specific" in contract
+    assert "do not imply cross-domain compatibility" in contract
+
+
+def test_public_engineering_contract_is_canonical() -> None:
+    assert Path("docs/engineering_contract.md").is_file()
+    assert not Path("AI_CONTRACT.md").exists()
+
+    claude = Path("CLAUDE.md").read_text(encoding="utf-8")
+    assert claude.startswith("@AGENTS.md\n")
+    assert "docs/agentic/README.md" in claude
+
+
+def test_agentic_docs_use_evidence_aligned_maintenance_language() -> None:
+    guide = Path("docs/agentic/README.md").read_text(encoding="utf-8")
+
+    assert "can discover" not in guide
+    assert "is intended for discovery by" in guide
+    assert "delivery sequence" not in guide
+    assert "incremental development" not in guide
+    assert "CI-enforced" in guide
+    assert "only when it is actually run" in guide
+
+
+def test_engineering_contract_uses_the_router_authority_order() -> None:
+    contract = Path("docs/engineering_contract.md").read_text(encoding="utf-8")
+    authority_lines = (
+        "1. direct instructions for the current task;",
+        "2. this engineering contract;",
+        "3. the root `AGENTS.md` router;",
+        "4. `docs/architecture.md`, `docs/IMPLEMENTED.md`, and",
+    )
+
+    positions = [contract.index(line) for line in authority_lines]
+    assert positions == sorted(positions)
+    assert "`docs/IMPLEMENTED.md` is product truth" in contract
+    assert "`docs/roadmap.md` is the current slice pointer" in contract
 
 
 def test_regression_corpus_contains_data_not_work_session_notes() -> None:
@@ -105,7 +145,7 @@ def test_project_state_doc_checker_detects_stale_phase_text(tmp_path: Path) -> N
         "AGENTS.md",
         "CLAUDE.md",
         "docs/development_workflow.md",
-        "AI_CONTRACT.md",
+        "docs/engineering_contract.md",
     ):
         source = Path(path)
         if not source.is_file():
@@ -137,7 +177,7 @@ def test_agent_guides_must_not_hard_code_phase(tmp_path: Path) -> None:
         "AGENTS.md",
         "CLAUDE.md",
         "docs/development_workflow.md",
-        "AI_CONTRACT.md",
+        "docs/engineering_contract.md",
     ):
         source = Path(path)
         if not source.is_file():

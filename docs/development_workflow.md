@@ -16,7 +16,8 @@ private `main` phase labels into this file.
 
 ## Standard Flow
 
-1. Confirm the change matches `docs/IMPLEMENTED.md`, `docs/LIMITATIONS.md`, `AI_CONTRACT.md`, and the slice in `docs/roadmap.md`.
+1. Confirm the change matches `docs/IMPLEMENTED.md`, `docs/LIMITATIONS.md`,
+   `docs/engineering_contract.md`, and the slice in `docs/roadmap.md`.
 2. Write tests before implementation.
 3. Implement the smallest useful change.
 4. Run the live gates that the change can affect.
@@ -45,7 +46,7 @@ python scripts/check_project_state_docs.py --check
 
 ## Docs
 
-- `AI_CONTRACT.md` — engineering contract
+- `docs/engineering_contract.md` — engineering contract
 - `docs/architecture.md` — pipeline and object model
 - `docs/IMPLEMENTED.md` — what a clone can run
 - `docs/LIMITATIONS.md` — explicit non-capabilities

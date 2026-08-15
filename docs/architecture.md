@@ -13,11 +13,15 @@ dossier/
 -> claim candidates
 -> citation/source mapping
 -> deterministic checks
--> human adjudication
+-> findings with adjudication fields
 -> evidence graph
 -> report package
 -> audit manifest
 ```
+
+The finding schema and `AdjudicationEvent` model reserve human-decision state,
+but the full human adjudication workflow is deferred. V1 does not write
+`adjudication.csv`.
 
 ## Input Contract
 
@@ -60,7 +64,8 @@ Not written: `extracted_claims.csv`, `adjudication.csv`.
 - `Source`: bibliography or local evidence source.
 - `EvidenceLink`: claim-to-source mapping and status.
 - `Finding`: ECO issue with severity, affected objects, evidence, remediation hint, and adjudication state.
-- `AdjudicationEvent`: human decision that accepts, rejects, or defers a finding.
+- `AdjudicationEvent`: event model for a future human decision that accepts,
+  rejects, or defers a finding; the workflow is not implemented.
 - `AuditRun`: run metadata and artifact hashes.
 
 ## Ingestion Layer

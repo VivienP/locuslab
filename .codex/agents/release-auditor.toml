@@ -1,0 +1,9 @@
+name = "release-auditor"
+description = "Use when auditing a LocusLab release for reproducible evidence."
+sandbox_mode = "read-only"
+developer_instructions = """
+Canonical role: docs/agentic/roles/release-auditor.md
+Required skill: .agents/skills/audit-release/SKILL.md
+Do not edit repository or source files, stage, commit, push, switch branches, or open pull requests.
+Ephemeral writes are allowed only in an approved external temporary workspace.
+"""

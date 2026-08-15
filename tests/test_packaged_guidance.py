@@ -24,9 +24,10 @@ PACKAGED_GUIDANCE_FILES = (
 )
 
 
-def test_byte_compared_guidance_json_is_pinned_to_lf() -> None:
+def test_byte_compared_guidance_files_are_pinned_to_lf() -> None:
     attributes = (REPO_ROOT / ".gitattributes").read_text(encoding="utf-8")
     for pattern in (
+        "docs/THIRD_PARTY.md text eol=lf",
         "docs/guidance/*.json text eol=lf",
         "docs/rules/guidance/**/*.json text eol=lf",
         "src/locuslab/resources/docs/**/*.json text eol=lf",
