@@ -1,7 +1,0 @@
-# Direct runtime dependencies from pyproject.toml.
-# Generated 2026-08-14 with importlib.metadata in the WS3 public-prep
-# environment (tool: pip-installed packages, not uv).
-# Transitive pins are omitted; recreate with a clean `pip install -e .`.
-python-docx==1.2.0
-pypdf==6.12.1
-openpyxl==3.1.5

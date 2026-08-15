@@ -26,7 +26,9 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Runtime pins for a known-good set are in `requirements.lock`.
+Dependency ranges and development extras are declared in `pyproject.toml`,
+which is also the installation source used by CI. The repository does not
+claim a fully locked transitive environment.
 
 ## Demo
 

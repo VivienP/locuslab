@@ -33,6 +33,15 @@ def test_project_state_docs_are_in_sync() -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def test_dependency_install_contract_uses_pyproject_only() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert not Path("requirements.lock").exists()
+    assert "requirements.lock" not in readme
+    assert 'pip install -e ".[dev]"' in workflow
+
+
 def test_project_state_doc_checker_detects_stale_phase_text(tmp_path: Path) -> None:
     for path in (
         "docs/roadmap.md",
