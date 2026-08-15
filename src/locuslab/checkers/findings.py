@@ -181,34 +181,49 @@ def check_unresolved_evidence_link(
     claims_by_id = {c.claim_id: c for c in claims}
 
     for link in evidence_links:
-        if link.status != "source_unresolved":
+        if link.status not in {"source_unresolved", "source_ambiguous"}:
             continue
         claim = claims_by_id.get(link.claim_id)
         if claim is None:
             continue
-        evidence_detail = (
-            f"Claim {claim.claim_id!r} of type {claim.claim_type.value!r} "
-            f"has no resolved local source. "
-            f"Linking method: {link.linking_method!r}."
-        )
+        if link.status == "source_ambiguous":
+            finding_type = "claim_with_ambiguous_sources"
+            evidence_detail = (
+                f"Claim {claim.claim_id!r} of type {claim.claim_type.value!r} "
+                f"matches multiple local sources; no single source was selected. "
+                f"Linking method: {link.linking_method!r}."
+            )
+            remediation_hint = (
+                "Disambiguate the citation metadata or have a reviewer select "
+                "the intended local source."
+            )
+        else:
+            finding_type = "claim_without_resolved_source"
+            evidence_detail = (
+                f"Claim {claim.claim_id!r} of type {claim.claim_type.value!r} "
+                f"has no resolved local source. "
+                f"Linking method: {link.linking_method!r}."
+            )
+            remediation_hint = (
+                "Provide an inline citation that resolves to a local "
+                "source, attach the supporting document, or queue the "
+                "claim for manual review."
+            )
         findings.append(
             _make_finding(
                 eco_short="SRC",
                 severity=FindingSeverity.MAJOR,
                 checker_id=CHECKER_UNRESOLVED_EVIDENCE,
-                finding_type="claim_without_resolved_source",
+                finding_type=finding_type,
                 affected_object_ids=(
                     claim.document_id,
                     claim.span_id,
                     claim.claim_id,
                     link.evidence_link_id,
+                    *sorted(link.candidate_source_ids),
                 ),
                 evidence=evidence_detail,
-                remediation_hint=(
-                    "Provide an inline citation that resolves to a local "
-                    "source, attach the supporting document, or queue the "
-                    "claim for manual review."
-                ),
+                remediation_hint=remediation_hint,
             )
         )
 

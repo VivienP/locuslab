@@ -129,6 +129,7 @@ def _evidence_link_record(link: EvidenceLink) -> dict[str, object]:
     rec["source_id"] = link.source_id
     rec["status"] = link.status
     rec["linking_method"] = link.linking_method
+    rec["candidate_source_ids"] = list(link.candidate_source_ids)
     return rec
 
 

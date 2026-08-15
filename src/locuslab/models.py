@@ -171,6 +171,7 @@ class EvidenceLink:
     source_id: str | None
     status: str
     linking_method: str
+    candidate_source_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

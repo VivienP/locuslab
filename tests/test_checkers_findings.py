@@ -114,6 +114,7 @@ def _make_link(
     status: str,
     source_id: str | None = None,
     linking_method: str = "no_link_found",
+    candidate_source_ids: tuple[str, ...] = (),
 ) -> EvidenceLink:
     return EvidenceLink(
         evidence_link_id=link_id,
@@ -121,6 +122,7 @@ def _make_link(
         source_id=source_id,
         status=status,
         linking_method=linking_method,
+        candidate_source_ids=candidate_source_ids,
     )
 
 
@@ -255,6 +257,24 @@ class TestUnresolvedEvidenceLink:
         link = _make_link("link_orphan", "claim_does_not_exist", status="source_unresolved")
         findings = check_unresolved_evidence_link([link], claims=[])
         assert findings == []
+
+    def test_ambiguous_link_names_all_candidate_sources(self):
+        claim = _make_claim("claim_ambiguous")
+        link = _make_link(
+            "link_ambiguous",
+            claim.claim_id,
+            status="source_ambiguous",
+            linking_method="explicit_citation_ambiguous",
+            candidate_source_ids=("src_b", "src_a"),
+        )
+
+        findings = check_unresolved_evidence_link([link], [claim])
+
+        assert len(findings) == 1
+        assert findings[0].finding_type == "claim_with_ambiguous_sources"
+        assert "multiple local sources" in findings[0].evidence
+        assert "src_a" in findings[0].affected_object_ids
+        assert "src_b" in findings[0].affected_object_ids
 
 
 # ===========================================================================

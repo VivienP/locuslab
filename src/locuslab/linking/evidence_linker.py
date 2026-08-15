@@ -19,6 +19,7 @@ from locuslab.models import Claim, ClaimType, EvidenceLink, Source, Span, SpanLo
 
 # Linking method labels
 _METHOD_EXPLICIT_CITATION = "explicit_citation"
+_METHOD_EXPLICIT_CITATION_AMBIGUOUS = "explicit_citation_ambiguous"
 _METHOD_FILENAME_REFERENCE = "filename_reference"
 _METHOD_NO_LINK_FOUND = "no_link_found"
 
@@ -113,11 +114,11 @@ class EvidenceLinker:
         for cite in citations:
             cites_by_span.setdefault(cite["span_id"], []).append(cite)
 
-        sources_by_key: dict[str, Source] = {}
+        sources_by_key: dict[str, list[Source]] = {}
         sources_by_path: dict[str, Source] = {}
         for src in sources:
             if src.citation_key:
-                sources_by_key[src.citation_key] = src
+                sources_by_key.setdefault(src.citation_key, []).append(src)
             if src.path:
                 sources_by_path[src.path] = src
 
@@ -140,25 +141,44 @@ class EvidenceLinker:
         self,
         claim: Claim,
         cites_by_span: dict[str, list[CitationMention]],
-        sources_by_key: dict[str, Source],
+        sources_by_key: dict[str, list[Source]],
         sources_by_path: dict[str, Source],
         gspr_req_to_evdoc: dict[str, str | None],
     ) -> EvidenceLink:
         span_cites = cites_by_span.get(claim.span_id, [])
+        ambiguous_source_ids: set[str] = set()
 
         # Rule 1: explicit author-year citation resolving to local_fulltext source
         for cite in span_cites:
             if cite["marker_form"] in ("author_year_parenthetical", "author_year_table_cell"):
                 key = cite["normalized_key"]
                 if key and key in sources_by_key:
-                    src = sources_by_key[key]
-                    if src.availability_status == "local_fulltext":
+                    local_sources = [
+                        source
+                        for source in sources_by_key[key]
+                        if source.availability_status == "local_fulltext"
+                    ]
+                    if len(local_sources) == 1:
+                        src = local_sources[0]
                         return self._make_link(
                             claim.claim_id,
                             src.source_id,
                             "resolved",
                             _METHOD_EXPLICIT_CITATION,
                         )
+                    if len(local_sources) > 1:
+                        ambiguous_source_ids.update(
+                            source.source_id for source in local_sources
+                        )
+
+        if ambiguous_source_ids:
+            return self._make_link(
+                claim.claim_id,
+                None,
+                "source_ambiguous",
+                _METHOD_EXPLICIT_CITATION_AMBIGUOUS,
+                candidate_source_ids=tuple(sorted(ambiguous_source_ids)),
+            )
 
         # Rule 2: bracketed-numeric citation with no numbered references resolution
         bracket_cites = [c for c in span_cites if c["marker_form"] == "numeric_bracketed"]
@@ -214,12 +234,17 @@ class EvidenceLinker:
         source_id: str | None,
         status: str,
         linking_method: str,
+        candidate_source_ids: tuple[str, ...] = (),
     ) -> EvidenceLink:
-        link_id = make_evidence_link_id(claim_id, source_id, status)
+        sorted_candidate_ids = tuple(sorted(candidate_source_ids))
+        link_id = make_evidence_link_id(
+            claim_id, source_id, status, sorted_candidate_ids
+        )
         return EvidenceLink(
             evidence_link_id=link_id,
             claim_id=claim_id,
             source_id=source_id,
             status=status,
             linking_method=linking_method,
+            candidate_source_ids=sorted_candidate_ids,
         )
