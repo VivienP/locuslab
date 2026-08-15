@@ -210,6 +210,21 @@ class TestPipelineSkipsGuidanceForNonSscpDossier:
                 f"non-SSCP manifest should not carry {key}"
             )
 
+    def test_reused_output_removes_stale_guidance_artifacts(
+        self, tmp_path: Path
+    ) -> None:
+        verify_dossier(
+            dossier_dir=SYNTHETIC_SSCP_DOSSIER,
+            output_dir=tmp_path,
+        )
+        assert (tmp_path / "guidance_review.json").is_file()
+        assert (tmp_path / "guidance_review.md").is_file()
+
+        verify_dossier(dossier_dir=DEMO_DOSSIER, output_dir=tmp_path)
+
+        assert not (tmp_path / "guidance_review.json").exists()
+        assert not (tmp_path / "guidance_review.md").exists()
+
 
 class TestPipelineEmitsGuidanceForSscpDossier:
     @pytest.fixture()

@@ -68,6 +68,34 @@ class TestOutputPathSafety:
         assert sentinel.read_bytes() == before
         assert not (output_dir / "claims.jsonl").exists()
 
+    def test_output_preflight_does_not_partially_delete_on_name_collision(
+        self, tmp_path: Path
+    ) -> None:
+        from locuslab.pipeline import OutputDirectoryError, verify_dossier
+
+        output_dir = tmp_path / "run"
+        output_dir.mkdir()
+        stale_claims = output_dir / "claims.jsonl"
+        stale_claims.write_bytes(b"previous run")
+        (output_dir / "report.docx").mkdir()
+
+        with pytest.raises(OutputDirectoryError, match="not a file"):
+            verify_dossier(DEMO_DOSSIER, output_dir)
+
+        assert stale_claims.read_bytes() == b"previous run"
+
+    def test_reused_output_preserves_unknown_files(self, tmp_path: Path) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        output_dir = tmp_path / "run"
+        output_dir.mkdir()
+        user_note = output_dir / "reviewer-notes.txt"
+        user_note.write_bytes(b"retain me")
+
+        verify_dossier(DEMO_DOSSIER, output_dir)
+
+        assert user_note.read_bytes() == b"retain me"
+
 
 def test_not_applicable_gspr_row_does_not_emit_major_finding(tmp_path: Path) -> None:
     from locuslab.pipeline import verify_dossier

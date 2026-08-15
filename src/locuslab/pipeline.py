@@ -42,6 +42,23 @@ class OutputDirectoryError(ValueError):
     """Raised when a run output path could overwrite dossier or user data."""
 
 
+_GENERATED_ARTIFACT_NAMES: tuple[str, ...] = (
+    "claims.jsonl",
+    "citations.jsonl",
+    "sources.jsonl",
+    "evidence_links.jsonl",
+    "findings.jsonl",
+    "findings.csv",
+    "graph.jsonl",
+    "guidance_review.json",
+    "guidance_review.md",
+    "audit_manifest.json",
+    "report.json",
+    "findings.xlsx",
+    "report.docx",
+)
+
+
 @dataclasses.dataclass(frozen=True)
 class VerifyResult:
     """Summary counts from a completed verification run."""
@@ -71,6 +88,30 @@ def _validate_output_path(dossier_dir: Path, output_dir: Path) -> None:
         )
     if output_path.exists() and not output_path.is_dir():
         raise OutputDirectoryError(f"Output path is not a directory: {output_path}")
+
+
+def _prepare_output_directory(output_dir: Path) -> None:
+    """Remove only known run artifacts before writing a replacement run."""
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        existing_artifacts = tuple(
+            output_dir / name
+            for name in _GENERATED_ARTIFACT_NAMES
+            if (output_dir / name).exists() or (output_dir / name).is_symlink()
+        )
+        for artifact_path in existing_artifacts:
+            if not artifact_path.is_symlink() and not artifact_path.is_file():
+                raise OutputDirectoryError(
+                    f"Generated artifact path is not a file: {artifact_path}"
+                )
+        for artifact_path in existing_artifacts:
+            artifact_path.unlink()
+    except OutputDirectoryError:
+        raise
+    except OSError as exc:
+        raise OutputDirectoryError(
+            f"Output directory could not be prepared: {output_dir}: {exc}"
+        ) from exc
 
 
 def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
@@ -109,7 +150,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     findings = run_checkers(claims, citations, sources, evidence_links)
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    _prepare_output_directory(output_dir)
     write_jsonl(claims, output_dir / "claims.jsonl")
     write_jsonl(citations, output_dir / "citations.jsonl")
     write_jsonl(sources, output_dir / "sources.jsonl")

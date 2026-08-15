@@ -44,6 +44,12 @@ Every `locus verify` run writes:
 SSCP-routed runs also write `guidance_review.json` and `guidance_review.md`
 (review aids, not ECO findings).
 
+When an output directory is reused, the pipeline preflights and replaces only
+the artifact names in this contract. Optional artifacts from the previous run
+are removed, while files with unrelated names are preserved. A directory or
+other non-file occupying a generated artifact name aborts the run before any
+previous artifact is removed.
+
 Not written: `extracted_claims.csv`, `adjudication.csv`.
 
 ## Core Object Model
