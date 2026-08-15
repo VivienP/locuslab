@@ -205,3 +205,21 @@ class TestCliSummary:
         assert "claims" in captured.out, f"'claims' not in stdout: {captured.out!r}"
         assert "citations" in captured.out, f"'citations' not in stdout: {captured.out!r}"
         assert "sources" in captured.out, f"'sources' not in stdout: {captured.out!r}"
+
+    def test_cli_rejects_dossier_with_only_corrupt_supported_input(
+        self, capsys: pytest.CaptureFixture[str], tmp_path: Path
+    ) -> None:
+        from locuslab.cli import main
+
+        dossier = tmp_path / "corrupt_dossier"
+        dossier.mkdir()
+        (dossier / "CER.docx").write_bytes(b"not a valid docx")
+        output_dir = tmp_path / "run"
+
+        code = main(["verify", str(dossier), "--out", str(output_dir)])
+
+        captured = capsys.readouterr()
+        assert code == 2
+        assert "no usable content" in captured.err.lower()
+        assert "Verified:" not in captured.out
+        assert not output_dir.exists()

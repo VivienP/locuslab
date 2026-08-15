@@ -26,7 +26,7 @@ from locuslab.guidance.assets import (
     RULE_PACK_RELPATH,
     load_guidance_payload,
 )
-from locuslab.ingest import load_dossier
+from locuslab.ingest import DossierLoadError, load_dossier
 from locuslab.linking.bibliography_resolver import BibliographyResolver
 from locuslab.linking.evidence_linker import EvidenceLinker
 from locuslab.models import DocumentKind
@@ -86,6 +86,17 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     """
     _validate_output_path(dossier_dir, output_dir)
     result = load_dossier(dossier_dir)
+    if not result.spans:
+        warning_codes = sorted({warning.code.value for warning in result.warnings})
+        warning_detail = (
+            f" Parser warnings: {', '.join(warning_codes)}."
+            if warning_codes
+            else ""
+        )
+        raise DossierLoadError(
+            "Dossier yielded no usable content spans from supported inputs."
+            f"{warning_detail}"
+        )
 
     documents = list(result.documents)
     spans = list(result.spans)

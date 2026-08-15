@@ -72,6 +72,10 @@ Ingestion converts each supported file into spans:
 Dossier PDF ingestion stays on `pypdf`. The optional extra `guidance-extract`
 uses `pdfplumber` only to derive Markdown from committed guidance PDFs.
 Readers must remain offline; network access is forbidden inside ingestion.
+The loader preserves parser diagnostics even for unreadable files. The
+verification pipeline fails before writing a run when the complete dossier
+yields zero usable spans, so corrupt or empty inputs cannot produce a
+successful zero-content audit.
 
 ## Checker Philosophy
 
