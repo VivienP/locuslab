@@ -143,6 +143,7 @@ class TestGsprMissingFiles:
         pms_sources = [s for s in sources if s.path == "PMS.docx"]
         assert pms_sources, f"No PMS.docx source; paths={[s.path for s in sources]}"
         assert pms_sources[0].availability_status == "missing_file"
+        assert pms_sources[0].origin_span_ids == (pms_gspr_span.span_id,)
 
     def test_gspr_missing_file_labeling_pdf(
         self, resolver, gspr_doc, source_doc, labeling_gspr_span, source_page1_span
@@ -162,6 +163,33 @@ class TestGsprMissingFiles:
         labeling_sources = [s for s in sources if s.path == "Labeling.pdf"]
         assert labeling_sources, f"No Labeling.pdf source; paths={[s.path for s in sources]}"
         assert labeling_sources[0].availability_status == "missing_file"
+        assert labeling_sources[0].origin_span_ids == (labeling_gspr_span.span_id,)
+
+    def test_duplicate_gspr_reference_retains_all_origin_spans(
+        self, resolver, gspr_doc
+    ):
+        first = _make_span(
+            "span_first_origin",
+            gspr_doc.document_id,
+            "PMS.docx",
+            kind=SpanLocationKind.TABLE_CELL,
+            section="GSPR:D=Evidence_Document",
+        )
+        second = _make_span(
+            "span_second_origin",
+            gspr_doc.document_id,
+            "PMS.docx",
+            kind=SpanLocationKind.TABLE_CELL,
+            section="GSPR:D=Evidence_Document",
+        )
+
+        sources = resolver.resolve([gspr_doc], [second, first], [])
+
+        assert len(sources) == 1
+        assert sources[0].origin_span_ids == (
+            "span_first_origin",
+            "span_second_origin",
+        )
 
 
 class TestSourceIdStability:

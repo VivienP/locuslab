@@ -159,6 +159,7 @@ class Source:
     path: str | None
     citation_key: str | None
     availability_status: str
+    origin_span_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

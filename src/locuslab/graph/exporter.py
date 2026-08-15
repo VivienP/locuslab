@@ -118,6 +118,7 @@ def _source_record(source: Source) -> dict[str, object]:
     rec["path"] = source.path
     rec["citation_key"] = source.citation_key
     rec["availability_status"] = source.availability_status
+    rec["origin_span_ids"] = list(source.origin_span_ids)
     return rec
 
 

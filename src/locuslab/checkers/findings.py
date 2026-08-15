@@ -258,7 +258,12 @@ def check_source_availability_gap(
                 f"is not directly referenced by any extracted claim; review "
                 f"whether the reference can be removed or the file supplied."
             )
-        affected = tuple(related_document_ids) + (source.source_id,) + tuple(related_claim_ids)
+        affected = (
+            tuple(related_document_ids)
+            + tuple(sorted(source.origin_span_ids))
+            + (source.source_id,)
+            + tuple(related_claim_ids)
+        )
         findings.append(
             _make_finding(
                 eco_short="COMPL",
@@ -288,9 +293,8 @@ def check_source_availability_gap(
         if claim is None:
             continue
         evidence_detail = (
-            f"Completeness gap on claim {claim.claim_id!r}: a required "
-            f"evidence document is referenced but cannot be located in the "
-            f"provided package."
+            f"Completeness gap on claim {claim.claim_id!r}: the applicable "
+            f"GSPR row has no evidence document reference."
         )
         findings.append(
             _make_finding(

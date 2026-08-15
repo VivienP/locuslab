@@ -170,6 +170,23 @@ class TestGraphExportCompleteness:
         }
         assert span_ids_from_claims.issubset(by_family["span"])
 
+    def test_missing_sources_retain_resolvable_gspr_origin_spans(
+        self, demo_graph_records: list[dict[str, object]]
+    ) -> None:
+        graph_ids = {rec["record_id"] for rec in demo_graph_records}
+        missing_sources = [
+            rec
+            for rec in demo_graph_records
+            if rec["record_type"] == "source"
+            and rec["availability_status"] == "missing_file"
+        ]
+
+        assert missing_sources
+        for source in missing_sources:
+            origin_span_ids = source["origin_span_ids"]
+            assert origin_span_ids
+            assert set(origin_span_ids).issubset(graph_ids)  # type: ignore[arg-type]
+
 
 class TestFindingAffectedIdsResolve:
     def test_finding_affected_ids_resolve_to_graph_records_or_are_surfaced(

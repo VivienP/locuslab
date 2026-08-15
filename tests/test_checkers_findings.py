@@ -129,12 +129,14 @@ def _make_source(
     availability_status: str,
     citation_key: str | None = None,
     path: str | None = None,
+    origin_span_ids: tuple[str, ...] = (),
 ) -> Source:
     return Source(
         source_id=source_id,
         path=path,
         citation_key=citation_key,
         availability_status=availability_status,
+        origin_span_ids=origin_span_ids,
     )
 
 
@@ -267,6 +269,7 @@ class TestSourceAvailabilityGap:
             availability_status="missing_file",
             citation_key=None,
             path="bibliography/PMS.docx",
+            origin_span_ids=("span_gspr_pms",),
         )
         claim = _make_claim("claim_pms", claim_type=ClaimType.COMPLETENESS)
         link = _make_link(
@@ -283,6 +286,7 @@ class TestSourceAvailabilityGap:
         assert findings[0].checker_id == CHECKER_SOURCE_AVAILABILITY
         assert "PMS.docx" in findings[0].evidence
         assert "not located" in findings[0].evidence
+        assert "span_gspr_pms" in findings[0].affected_object_ids
         _assert_conservative_language(findings[0].evidence)
         _assert_conservative_language(findings[0].remediation_hint)
 
@@ -308,6 +312,8 @@ class TestSourceAvailabilityGap:
         assert len(findings) == 1
         assert findings[0].finding_type == "completeness_gap_applicable_but_no_evidence"
         assert findings[0].severity == FindingSeverity.MAJOR
+        assert "has no evidence document reference" in findings[0].evidence.lower()
+        assert "is referenced" not in findings[0].evidence.lower()
 
     def test_missing_file_source_no_critical_severity(self):
         # MVP severity discipline: zero Critical on synthetic dossiers.
