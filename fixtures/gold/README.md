@@ -13,24 +13,9 @@ These files are used for:
 - extraction recall/precision measurement (no committed numeric thresholds)
 - checker recall and false-positive measurement (no committed numeric thresholds)
 
-These files are **not** training data, are **not** used to set numeric pass
-thresholds before calibration, and are **not** shared with `eval/synthetic_dossier/`.
-
-## Isolation rule — `fixtures/gold/` vs `eval/synthetic_dossier/`
-
-The benchmark-isolation rule is the most important property of this annotation
-strategy. The two fixture trees measure different things:
-
-| | `fixtures/gold/` (this dir) | `eval/synthetic_dossier/` |
-|---|---|---|
-| Purpose | Demo regression, buyer reproducibility, dev iteration | Locked ECO recall benchmark |
-| Driven by | `scripts/run_demo.py` | `/eval` command (deferred) |
-| Numeric thresholds | Deferred until post-calibration | Locked (per benchmark-isolation skill) |
-| Annotation source | Span IDs against `fixtures/demo_dossier/` | Independent synthetic dossier (`eval/synthetic_dossier/`) |
-
-**Never** copy demo gold into `eval/`. **Never** modify `eval/synthetic_dossier/`
-when working in this directory. If the two converge, the eval becomes
-self-referential and stops measuring anything.
+These files are **not** training data and are **not** an independent benchmark.
+They are regression annotations for the same public demo fixture they describe;
+no calibrated recall or false-positive threshold is claimed.
 
 ## How these files were created
 

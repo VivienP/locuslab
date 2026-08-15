@@ -81,6 +81,12 @@ def test_regression_corpus_contains_data_not_work_session_notes() -> None:
         assert records, path
 
 
+def test_unimplemented_evaluation_fixture_is_not_published_as_ground_truth() -> None:
+    assert not Path("eval/synthetic_dossier/ground_truth.json").exists()
+    gold_readme = Path("fixtures/gold/README.md").read_text(encoding="utf-8")
+    assert "eval/synthetic_dossier" not in gold_readme
+
+
 def test_third_party_inventory_has_no_work_session_labels() -> None:
     source = Path("docs/THIRD_PARTY.md").read_text(encoding="utf-8")
     packaged = Path("src/locuslab/resources/docs/THIRD_PARTY.md").read_text(
