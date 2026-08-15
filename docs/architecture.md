@@ -109,6 +109,8 @@ of every generated run artifact except the manifest itself. Reports embed the
 hashes of the source artifacts used to build them; the manifest is finalized
 after the byte-stable report package is written. Cryptographic proof
 infrastructure is deferred until finding quality and buyer demand justify it.
+The graph and reports record the resolved dossier root with POSIX separators,
+so relative and absolute invocations of the same local dossier are identical.
 
 ## Engine Domain Discipline
 

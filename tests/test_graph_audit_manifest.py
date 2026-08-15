@@ -394,6 +394,26 @@ class TestManifestDeterminism:
             run_b / "audit_manifest.json"
         ).read_bytes()
 
+    def test_relative_and_absolute_dossier_invocations_are_byte_equal(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        repository_root = Path(__file__).resolve().parent.parent
+        monkeypatch.chdir(repository_root)
+        relative_dossier = Path("fixtures/demo_dossier")
+        absolute_dossier = relative_dossier.resolve()
+        relative_run = tmp_path / "relative"
+        absolute_run = tmp_path / "absolute"
+
+        verify_dossier(relative_dossier, relative_run)
+        verify_dossier(absolute_dossier, absolute_run)
+
+        for artifact_name in ("graph.jsonl", "report.json", "audit_manifest.json"):
+            assert (relative_run / artifact_name).read_bytes() == (
+                absolute_run / artifact_name
+            ).read_bytes()
+
 
 class TestRunIdStability:
     def test_run_id_stable_across_runs(self, tmp_path: Path) -> None:

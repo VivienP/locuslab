@@ -141,6 +141,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     documents = list(result.documents)
     spans = list(result.spans)
+    canonical_dossier_path = result.dossier_dir.as_posix()
 
     claims = ClaimExtractor().extract_claims(spans, documents)
     citations = CitationParser().parse_citations(spans)
@@ -223,7 +224,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     graph_records = build_graph_records(
         run_id=run_id,
-        dossier_path=str(dossier_dir),
+        dossier_path=canonical_dossier_path,
         documents=documents,
         spans=spans,
         claims=claims,
@@ -300,7 +301,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
         evidence_links=evidence_links,
         findings=findings,
         audit_manifest=report_basis_manifest,
-        dossier_path=str(dossier_dir),
+        dossier_path=canonical_dossier_path,
         artifact_counts=artifact_counts,
         output_dir=output_dir,
         sources=sources,
