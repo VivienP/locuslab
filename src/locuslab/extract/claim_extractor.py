@@ -186,13 +186,10 @@ class ClaimExtractor:
         # Track character ranges consumed by PERCENTAGE_WITH_CI so we don't
         # double-count the percentage value or the CI range separately.
         consumed_ranges: list[tuple[int, int]] = []
-        seen_values: set[str] = set()
 
         # Compound percentage+CI pattern (e.g. "87.4% (95% CI: 82.1-91.6)")
         for m in PERCENTAGE_WITH_CI.finditer(text):
             raw = (m.group("pct") + " " + m.group("ci_paren")).strip()
-            val = m.group("pct").strip().rstrip("%").strip()
-            seen_values.add(val)
             consumed_ranges.append((m.start(), m.end()))
             normalized = _normalize_text(raw)
             claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))
@@ -211,10 +208,6 @@ class ClaimExtractor:
             for m in PERCENTAGE_DECIMAL.finditer(text):
                 if _in_consumed(m.start(), m.end()):
                     continue
-                val = m.group("value")
-                if val in seen_values:
-                    continue
-                seen_values.add(val)
                 raw = m.group(0).strip()
                 normalized = _normalize_text(raw)
                 claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))
@@ -224,10 +217,6 @@ class ClaimExtractor:
             for m in _PERCENT_WORD.finditer(text):
                 if _in_consumed(m.start(), m.end()):
                     continue
-                val = m.group("value")
-                if val in seen_values:
-                    continue  # already captured above
-                seen_values.add(val)
                 raw = m.group(0).strip()
                 normalized = _normalize_text(raw)
                 claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))

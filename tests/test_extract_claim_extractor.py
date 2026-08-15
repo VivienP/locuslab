@@ -145,6 +145,25 @@ def source_doc() -> Document:
 
 
 class TestNumericExtraction:
+    def test_equal_percentages_for_distinct_endpoints_remain_distinct(
+        self, extractor, cer_doc
+    ):
+        span = _make_span(
+            "span_equal_percentages",
+            DOC_ID_CER,
+            "Sensitivity was 90.0%. Specificity was also 90.0%.",
+        )
+
+        claims = extractor.extract_claims([span], [cer_doc])
+
+        percentages = [
+            claim
+            for claim in claims
+            if claim.claim_type == ClaimType.NUMERIC and claim.text == "90.0%"
+        ]
+        assert len(percentages) == 2
+        assert len({claim.claim_id for claim in percentages}) == 2
+
     def test_numeric_extraction_from_pivotal_endpoint(self, extractor, cer_doc):
         """GOLD-CLAIM-004: extracts 87.4%, CI, and n= numeric claims from pivotal span."""
         span = _make_span(PIVOTAL_SPAN_ID, DOC_ID_CER, PIVOTAL_TEXT)
