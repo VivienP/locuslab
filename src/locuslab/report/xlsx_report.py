@@ -5,9 +5,8 @@ empty adjudication columns (reviewer / review_notes / resolution) ready for
 human RA/QA fill-in. Optional `Summary` sheet with severity and finding_type
 counts.
 
-Byte-determinism is not asserted by the Phase 5 tests (xlsx is a zip with
-internal mtimes); content order is stable because we iterate sorted
-sequences.
+The saved OOXML ZIP is canonicalised so stable workbook content produces
+byte-identical output suitable for SHA-256 manifest coverage.
 """
 
 from __future__ import annotations
@@ -23,6 +22,7 @@ from openpyxl.styles import Font
 from openpyxl.worksheet.worksheet import Worksheet
 
 from locuslab.models import Finding, FindingSeverity
+from locuslab.report.ooxml import canonicalise_ooxml
 
 XLSX_FINDINGS_COLUMNS: tuple[str, ...] = (
     "eco_id",
@@ -52,9 +52,9 @@ XLSX_FINDINGS_COLUMN_WIDTHS: dict[str, int] = {
     "resolution": 24,
 }
 
-# Fixed timestamp to stabilise visible workbook metadata across reruns.
-# Does not make the .xlsx byte-equal (zip internal mtimes still drift) but
-# keeps the visible `properties.created` / `modified` deterministic.
+# Fixed timestamp to stabilise visible workbook metadata across reruns. The
+# OOXML canonicaliser also restores this value because openpyxl overwrites
+# `modified` during save.
 _FIXED_TIMESTAMP = dt.datetime(2026, 1, 1, 0, 0, 0)
 
 
@@ -127,3 +127,4 @@ def write_findings_xlsx(findings: Sequence[Finding], path: Path) -> None:
     _write_findings_sheet(wb, findings)
     _write_summary_sheet(wb, findings)
     wb.save(str(path))
+    canonicalise_ooxml(path)

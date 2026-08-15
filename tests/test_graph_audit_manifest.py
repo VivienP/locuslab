@@ -270,7 +270,12 @@ class TestManifestHashesMatch:
         self, demo_run: Path, demo_manifest: dict[str, object]
     ) -> None:
         hashes = demo_manifest["artifact_hashes"]
-        for fname in PHASE_1_3_ARTIFACTS + ("graph.jsonl",):
+        for fname in PHASE_1_3_ARTIFACTS + (
+            "graph.jsonl",
+            "report.json",
+            "findings.xlsx",
+            "report.docx",
+        ):
             assert fname in hashes, f"Missing hash for {fname}"  # type: ignore[operator]
             expected = _sha256_bytes((demo_run / fname).read_bytes())
             assert hashes[fname] == expected, (  # type: ignore[index]

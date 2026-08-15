@@ -271,7 +271,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     ]
     if guidance_evaluations is not None:
         hashed_artifacts.extend(["guidance_review.json", "guidance_review.md"])
-    artifact_hashes = {
+    source_artifact_hashes = {
         name: hash_artifact(output_dir / name) for name in hashed_artifacts
     }
 
@@ -281,6 +281,34 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     unresolved_affected_ids = compute_unresolved_affected_ids(
         findings, collect_record_ids(graph_records)
     )
+
+    report_basis_manifest = build_manifest(
+        run_id=run_id,
+        documents=documents,
+        artifact_counts=artifact_counts,
+        artifact_hashes=source_artifact_hashes,
+        extraction_methods=extraction_methods,
+        checker_ids=checker_ids,
+        linking_methods=linking_methods,
+        unresolved_affected_ids=unresolved_affected_ids,
+    )
+    # Reports quote hashes of their source artifacts. The final manifest is
+    # written afterwards so it can hash those reports without a digest cycle.
+    write_report_package(
+        documents=documents,
+        claims=claims,
+        evidence_links=evidence_links,
+        findings=findings,
+        audit_manifest=report_basis_manifest,
+        dossier_path=str(dossier_dir),
+        artifact_counts=artifact_counts,
+        output_dir=output_dir,
+        sources=sources,
+    )
+
+    artifact_hashes = dict(source_artifact_hashes)
+    for name in ("report.json", "findings.xlsx", "report.docx"):
+        artifact_hashes[name] = hash_artifact(output_dir / name)
 
     manifest = build_manifest(
         run_id=run_id,
@@ -293,22 +321,6 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
         unresolved_affected_ids=unresolved_affected_ids,
     )
     write_manifest(manifest, output_dir / "audit_manifest.json")
-
-    # Phase 5 — buyer-facing report package (report.json, findings.xlsx, report.docx).
-    # Quotes Phase 4 manifest fields (run_id, artifact_hashes, known_limitations)
-    # rather than re-deriving them, keeping the Phase 4 audit_manifest.json
-    # byte-equal across runs.
-    write_report_package(
-        documents=documents,
-        claims=claims,
-        evidence_links=evidence_links,
-        findings=findings,
-        audit_manifest=manifest,
-        dossier_path=str(dossier_dir),
-        artifact_counts=artifact_counts,
-        output_dir=output_dir,
-        sources=sources,
-    )
 
     return VerifyResult(
         n_claims=len(claims),

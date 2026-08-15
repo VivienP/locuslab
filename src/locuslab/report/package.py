@@ -1,8 +1,8 @@
 """Phase 5 report package orchestrator.
 
-Single entry point invoked by the pipeline after the Phase 4 audit manifest
-has been built. Writes report.json, findings.xlsx, and report.docx into the
-same run directory as the Phase 1-4 artifacts.
+Single entry point invoked after the report-basis manifest has been built.
+Writes report.json, findings.xlsx, and report.docx into the run directory;
+the pipeline hashes them into the final audit manifest afterwards.
 """
 
 from __future__ import annotations
@@ -40,10 +40,9 @@ def write_report_package(
 ) -> ReportPackagePaths:
     """Build and write the three Phase 5 report artifacts.
 
-    `audit_manifest` is the already-built in-memory manifest dict from the
-    Phase 4 stage; this function quotes its `run_id`, `artifact_hashes`, and
-    `known_limitations` without re-deriving them, keeping Phase 4 outputs
-    untouched.
+    `audit_manifest` is the in-memory report basis. Its `artifact_hashes`
+    cover the source artifacts consumed by the reports, while `run_id` and
+    `known_limitations` remain identical to the final manifest.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     report_json_path = output_dir / "report.json"

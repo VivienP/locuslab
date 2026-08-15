@@ -1,8 +1,8 @@
 """Build the canonical report.json dict and write it deterministically.
 
-report.json is the machine-readable companion to report.docx; it quotes the
-Phase 4 audit_manifest fields (artifact_hashes, known_limitations) verbatim
-rather than re-deriving them, which keeps Phase 4 artifacts unmodified.
+report.json is the machine-readable companion to report.docx. It records the
+hashes of the source artifacts used to build the report; the final manifest
+then adds hashes for report.json, findings.xlsx, and report.docx.
 
 Determinism contract: identical input → byte-equal report.json. Enforced via
 sort_keys=True on the top-level dump and stable sorting of nested lists.
@@ -76,9 +76,9 @@ def build_report_dict(
 ) -> dict[str, object]:
     """Build the canonical report.json dict.
 
-    `audit_manifest` is the in-memory manifest dict already built in the
-    Phase 4 stage; we quote its `artifact_hashes` and `known_limitations`
-    rather than re-hashing or re-deriving.
+    `audit_manifest` is the in-memory report basis. Its artifact hashes cover
+    source artifacts only, avoiding a digest cycle when the final manifest
+    later hashes the generated reports.
     """
     report = {
         "report_schema_version": REPORT_SCHEMA_VERSION,

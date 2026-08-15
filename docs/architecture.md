@@ -101,7 +101,11 @@ Do not use embeddings, LLMs, or semantic similarity as final verdict machinery.
 
 V1 persists graph-ready data in `graph.jsonl` or SQLite. IDs and records must remain compatible with later RDF/SPARQL export, but V1 does not run a graph server.
 
-V1 uses `audit_manifest.json` for reproducibility metadata and artifact hashes. Cryptographic proof infrastructure is deferred until finding quality and buyer demand justify it.
+V1 uses `audit_manifest.json` for reproducibility metadata and SHA-256 hashes
+of every generated run artifact except the manifest itself. Reports embed the
+hashes of the source artifacts used to build them; the manifest is finalized
+after the byte-stable report package is written. Cryptographic proof
+infrastructure is deferred until finding quality and buyer demand justify it.
 
 ## Engine Domain Discipline
 

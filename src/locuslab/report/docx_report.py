@@ -27,6 +27,7 @@ from locuslab.models import (
     Source,
 )
 from locuslab.report.language import assert_no_forbidden_language
+from locuslab.report.ooxml import canonicalise_ooxml
 
 # Fixed timestamp keeps visible document properties stable across reruns.
 _FIXED_TIMESTAMP = dt.datetime(2026, 1, 1, 0, 0, 0)
@@ -188,8 +189,8 @@ def _write_artifact_inventory(
     )
     _add_paragraph(
         doc,
-        "Artifact hashes are quoted verbatim from audit_manifest.json "
-        "(source_artifact_hashes).",
+        "Source artifact hashes are recorded here; audit_manifest.json also "
+        "covers the generated report package.",
         "docx.artifact_inventory.body",
     )
     table = doc.add_table(rows=1, cols=2)
@@ -361,3 +362,4 @@ def write_report_docx(
     )
     _write_reviewer_next_steps(doc)
     doc.save(str(path))
+    canonicalise_ooxml(path)
