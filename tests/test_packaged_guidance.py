@@ -23,6 +23,16 @@ PACKAGED_GUIDANCE_FILES = (
 )
 
 
+def test_byte_compared_guidance_json_is_pinned_to_lf() -> None:
+    attributes = (REPO_ROOT / ".gitattributes").read_text(encoding="utf-8")
+    for pattern in (
+        "docs/guidance/*.json text eol=lf",
+        "docs/rules/guidance/**/*.json text eol=lf",
+        "src/locuslab/resources/docs/**/*.json text eol=lf",
+    ):
+        assert pattern in attributes.splitlines()
+
+
 def test_packaged_guidance_files_exist() -> None:
     root = files("locuslab.resources")
     for rel in PACKAGED_GUIDANCE_FILES:
