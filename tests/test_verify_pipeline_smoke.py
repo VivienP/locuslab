@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -38,6 +39,33 @@ class TestProducesFourJsonlFiles:
     def test_output_dir_is_created(self, verify_result, run_dir):
         """Output directory must be created if it does not exist."""
         assert run_dir.is_dir(), "Output directory was not created"
+
+
+class TestOutputPathSafety:
+    @pytest.mark.parametrize("relationship", ["same", "descendant", "ancestor"])
+    def test_verify_rejects_input_output_overlap_without_writing(
+        self, tmp_path: Path, relationship: str
+    ) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        dossier = tmp_path / "workspace" / "dossier"
+        shutil.copytree(DEMO_DOSSIER, dossier)
+        sentinel = dossier / "report.docx"
+        sentinel.write_bytes(b"original user input")
+        before = sentinel.read_bytes()
+
+        if relationship == "same":
+            output_dir = dossier
+        elif relationship == "descendant":
+            output_dir = dossier / "run"
+        else:
+            output_dir = dossier.parent
+
+        with pytest.raises(ValueError, match="must not overlap"):
+            verify_dossier(dossier, output_dir)
+
+        assert sentinel.read_bytes() == before
+        assert not (output_dir / "claims.jsonl").exists()
 
 
 class TestJsonlFilesWellFormed:

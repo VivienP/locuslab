@@ -37,6 +37,10 @@ class VerificationNotImplementedError(RuntimeError):
     """Raised until a future pipeline stage is implemented."""
 
 
+class OutputDirectoryError(ValueError):
+    """Raised when a run output path could overwrite dossier or user data."""
+
+
 @dataclasses.dataclass(frozen=True)
 class VerifyResult:
     """Summary counts from a completed verification run."""
@@ -52,6 +56,22 @@ class VerifyResult:
     """Phase 6D: count of guidance review items written; None when skipped."""
 
 
+def _validate_output_path(dossier_dir: Path, output_dir: Path) -> None:
+    dossier_path = dossier_dir.resolve()
+    output_path = output_dir.resolve()
+    if (
+        dossier_path == output_path
+        or dossier_path.is_relative_to(output_path)
+        or output_path.is_relative_to(dossier_path)
+    ):
+        raise OutputDirectoryError(
+            "Dossier and output directories must not overlap: "
+            f"dossier={dossier_path}, output={output_path}"
+        )
+    if output_path.exists() and not output_path.is_dir():
+        raise OutputDirectoryError(f"Output path is not a directory: {output_path}")
+
+
 def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     """Verify a dossier and write pipeline artifacts.
 
@@ -63,6 +83,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     Raises DossierLoadError if the dossier directory cannot be loaded.
     """
+    _validate_output_path(dossier_dir, output_dir)
     result = load_dossier(dossier_dir)
 
     documents = list(result.documents)

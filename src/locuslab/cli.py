@@ -8,7 +8,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from locuslab.ingest import DossierLoadError
-from locuslab.pipeline import verify_dossier
+from locuslab.pipeline import OutputDirectoryError, verify_dossier
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -41,6 +41,9 @@ def _run_verify(dossier_dir: Path, output_dir: Path) -> int:
 
     try:
         result = verify_dossier(dossier_dir=dossier_dir, output_dir=output_dir)
+    except OutputDirectoryError as exc:
+        sys.stderr.write(f"Output directory could not be prepared: {exc}\n")
+        return 2
     except DossierLoadError as exc:
         sys.stderr.write(f"Dossier could not be loaded: {exc}\n")
         return 2

@@ -56,3 +56,19 @@ def test_verify_reports_dossier_load_error_when_path_is_a_file(
     captured = capsys.readouterr()
     assert result == 2
     assert "Dossier could not be loaded" in captured.err
+
+
+def test_verify_reports_output_error_when_output_path_is_a_file(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dossier = tmp_path / "dossier"
+    dossier.mkdir()
+    output_file = tmp_path / "run"
+    output_file.write_text("user data", encoding="utf-8")
+
+    result = main(["verify", str(dossier), "--out", str(output_file)])
+
+    captured = capsys.readouterr()
+    assert result == 2
+    assert "Output directory could not be prepared" in captured.err
+    assert output_file.read_text(encoding="utf-8") == "user data"
