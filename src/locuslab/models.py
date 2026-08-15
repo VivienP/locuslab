@@ -41,6 +41,7 @@ class ParserWarningCode(StrEnum):
     EXTRACTION_EMPTY_DOCUMENT = "extraction_empty_document"
     EXTRACTION_UNREADABLE_FILE = "extraction_unreadable_file"
     EXTRACTION_PARTIAL_CONTENT = "extraction_partial_content"
+    EXTRACTION_FORMULA_VALUE_MISSING = "extraction_formula_value_missing"
 
 
 class SpanLocationKind(StrEnum):

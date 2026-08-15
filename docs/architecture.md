@@ -73,7 +73,10 @@ Ingestion converts each supported file into spans:
   no text layer emit `EXTRACTION_NO_TEXT_LAYER` and produce no span; OCR is out
   of V1 scope.
 - `.xlsx` via `openpyxl`: one span per non-empty cell. Header row context is
-  propagated onto each data cell via `Span.section`.
+  propagated onto each data cell via `Span.section`. Formulas are never
+  evaluated by LocusLab; a formula without a cached workbook value emits the
+  structured `extraction_formula_value_missing` diagnostic and no inferred
+  value.
 
 Dossier PDF ingestion stays on `pypdf`. The optional extra `guidance-extract`
 uses `pdfplumber` only to derive Markdown from committed guidance PDFs.
