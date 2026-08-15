@@ -12,7 +12,7 @@ PHASE_LABEL_RE = re.compile(r"Phase\s+\d+\s+-\s+[A-Za-z0-9 /&-]+")
 LIVE_STATE_DOCS = (
     Path("README.md"),
     Path("docs/development_workflow.md"),
-    Path("AI_CONTRACT.md"),
+    Path("docs/engineering_contract.md"),
 )
 
 AGENT_GUIDES = (
@@ -104,7 +104,10 @@ def check_agent_guides(root: Path) -> list[Finding]:
             findings.append(
                 Finding(path, "must not hard-code current phase; point to docs/roadmap.md")
             )
-        if "docs/roadmap.md" not in text:
+        delegates_to_agents = path == Path("CLAUDE.md") and text.startswith(
+            "@AGENTS.md\n"
+        )
+        if "docs/roadmap.md" not in text and not delegates_to_agents:
             findings.append(Finding(path, "must reference docs/roadmap.md as the slice source"))
     return findings
 

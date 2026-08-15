@@ -29,5 +29,5 @@ Python 3.12. Do not add the `guidance-extract` extra to that workflow.
   `docs/guidance/sources/` as Apache-licensed. Do not add AGPL PDF libraries
   (`pymupdf`, `pymupdf4llm`, `marker`, `docling`).
 
-See [`AI_CONTRACT.md`](AI_CONTRACT.md), `docs/architecture.md`, and
-`docs/IMPLEMENTED.md`.
+See [`docs/engineering_contract.md`](docs/engineering_contract.md),
+`docs/architecture.md`, and `docs/IMPLEMENTED.md`.

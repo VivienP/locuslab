@@ -101,7 +101,8 @@ See [NOTICE](NOTICE) and [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md).
 
 ## Docs
 
-- [Engineering contract](AI_CONTRACT.md)
+- [Engineering contract](docs/engineering_contract.md)
+- [Agentic development kit](docs/agentic/README.md)
 - [What is implemented](docs/IMPLEMENTED.md)
 - [Limitations](docs/LIMITATIONS.md)
 - [Demo walkthrough](docs/demo/WALKTHROUGH.md)

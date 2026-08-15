@@ -15,6 +15,7 @@ reports/
 .claude/logs/
 .claude/plans/
 .claude/settings.local.json
+CLAUDE.local.md
 .agents/logs/
 .agents/settings.local.json
 .codex/logs/
