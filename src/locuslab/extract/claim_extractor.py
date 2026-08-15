@@ -396,12 +396,14 @@ class ClaimExtractor:
 
         return claims
 
-    def _make_classification_claim(
+    def _make_entity_claim(
         self,
         span: Span,
         raw: str,
         extractor_id: str,
         occurrence_index: int,
+        *,
+        claim_type: ClaimType = ClaimType.CLASSIFICATION,
     ) -> Claim:
         normalized = _normalize_text(raw)
         claim_id = make_claim_id(
@@ -416,7 +418,7 @@ class ClaimExtractor:
             document_id=span.document_id,
             span_id=span.span_id,
             text=raw,
-            claim_type=ClaimType.CLASSIFICATION,
+            claim_type=claim_type,
             extraction_method=extractor_id,
             confidence_label=ConfidenceLabel.HIGH,
         )
@@ -429,7 +431,7 @@ class ClaimExtractor:
             raw = m.group(0).strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_MR_CONDITIONAL, occurrence_counters[raw]
                 )
             )
@@ -443,7 +445,7 @@ class ClaimExtractor:
             raw = m.group(0).strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_NB_NUMBER, occurrence_counters[raw]
                 )
             )
@@ -459,7 +461,7 @@ class ClaimExtractor:
             raw = m.group("code").strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_BASIC_UDI_DI, occurrence_counters[raw]
                 )
             )
@@ -475,7 +477,7 @@ class ClaimExtractor:
             raw = m.group("code").strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_EMDN_CODE, occurrence_counters[raw]
                 )
             )
@@ -496,8 +498,12 @@ class ClaimExtractor:
             raw = f"{body} {code}"
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
-                    span, raw, _EXTRACTOR_HARMONIZED_STANDARD, occurrence_counters[raw]
+                self._make_entity_claim(
+                    span,
+                    raw,
+                    _EXTRACTOR_HARMONIZED_STANDARD,
+                    occurrence_counters[raw],
+                    claim_type=ClaimType.STANDARD_REFERENCE,
                 )
             )
         return claims

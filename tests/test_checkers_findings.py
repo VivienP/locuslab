@@ -372,6 +372,12 @@ class TestManualReviewRequired:
         findings = check_manual_review_required([link], [claim])
         assert findings == []
 
+    def test_standard_reference_with_manual_review_is_filtered_out(self):
+        claim = _make_claim("claim_std", claim_type=ClaimType.STANDARD_REFERENCE)
+        link = _make_link("link_std", claim.claim_id, status="manual_review_required")
+        findings = check_manual_review_required([link], [claim])
+        assert findings == []
+
 
 # ===========================================================================
 # ECO ID stability

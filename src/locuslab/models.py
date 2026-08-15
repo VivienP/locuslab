@@ -63,6 +63,7 @@ class ClaimType(StrEnum):
     BENEFIT_RISK = "benefit_risk"
     COMPLETENESS = "completeness"
     CLASSIFICATION = "classification"
+    STANDARD_REFERENCE = "standard_reference"
     OTHER = "other"
 
 
