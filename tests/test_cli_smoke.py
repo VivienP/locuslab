@@ -1,4 +1,4 @@
-"""CLI smoke tests - updated for Phase 2 pipeline (verify now exits 0 on success)."""
+"""CLI smoke tests for successful and rejected verification requests."""
 
 from pathlib import Path
 
@@ -11,10 +11,10 @@ def test_cli_help_returns_zero() -> None:
     assert main(["--help"]) == 0
 
 
-def test_verify_empty_dossier_produces_zero_outputs(
+def test_verify_empty_dossier_fails_without_outputs(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """An empty dossier loads successfully and produces JSONL files with zero records."""
+    """An empty dossier cannot masquerade as a successful zero-content audit."""
     dossier = tmp_path / "dossier"
     dossier.mkdir()
     run_dir = tmp_path / "run"
@@ -22,12 +22,10 @@ def test_verify_empty_dossier_produces_zero_outputs(
     result = main(["verify", str(dossier), "--out", str(run_dir)])
 
     captured = capsys.readouterr()
-    assert result == 0, f"Expected exit 0, got {result}. stderr: {captured.err!r}"
-    assert "claims" in captured.out
-    assert "citations" in captured.out
-    # All JSONL output files must exist (empty)
-    for fname in ["claims.jsonl", "citations.jsonl", "sources.jsonl", "evidence_links.jsonl"]:
-        assert (run_dir / fname).exists(), f"Missing: {fname}"
+    assert result == 2
+    assert "no usable content" in captured.err.lower()
+    assert captured.out == ""
+    assert not run_dir.exists()
 
 
 def test_verify_on_demo_dossier_completes_successfully(
