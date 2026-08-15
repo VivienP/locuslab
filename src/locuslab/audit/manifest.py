@@ -12,6 +12,7 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
+from locuslab.diagnostics import serialize_parser_warnings
 from locuslab.models import Document
 
 MANIFEST_SCHEMA_VERSION = "audit.v1"
@@ -63,6 +64,7 @@ def _document_summary(doc: Document) -> dict[str, object]:
         "sha256": doc.sha256,
         "parser": doc.parser,
         "parse_warning_codes": sorted({w.code.value for w in doc.parse_warnings}),
+        "parse_warnings": serialize_parser_warnings(doc.parse_warnings),
     }
 
 

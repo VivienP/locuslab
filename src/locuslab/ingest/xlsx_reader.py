@@ -21,9 +21,18 @@ def read_xlsx(path: Path, *, document_id: str) -> ReaderResult:
         raise FileNotFoundError(f"XLSX file not found: {path}")
 
     relative = path.name
+    workbook = None
+    formula_workbook = None
     try:
         workbook = openpyxl.load_workbook(str(path), data_only=True, read_only=False)
+        formula_workbook = openpyxl.load_workbook(
+            str(path), data_only=False, read_only=False
+        )
     except Exception as exc:
+        if workbook is not None:
+            workbook.close()
+        if formula_workbook is not None:
+            formula_workbook.close()
         return ReaderResult(
             spans=(),
             warnings=(
@@ -40,27 +49,37 @@ def read_xlsx(path: Path, *, document_id: str) -> ReaderResult:
     warnings: list[ParserWarning] = []
     running_index = 0
 
-    for sheet_name in workbook.sheetnames:
-        try:
-            worksheet = workbook[sheet_name]
-        except Exception as exc:
-            warnings.append(
-                ParserWarning(
-                    code=ParserWarningCode.EXTRACTION_PARTIAL_CONTENT,
-                    message=f"openpyxl could not read sheet: {exc.__class__.__name__}",
+    try:
+        for sheet_name in workbook.sheetnames:
+            try:
+                worksheet = workbook[sheet_name]
+                formula_worksheet = formula_workbook[sheet_name]
+            except Exception as exc:
+                warnings.append(
+                    ParserWarning(
+                        code=ParserWarningCode.EXTRACTION_PARTIAL_CONTENT,
+                        message=f"openpyxl could not read sheet: {exc.__class__.__name__}",
+                        path=relative,
+                        location=f"sheet={sheet_name}",
+                    )
+                )
+                continue
+            sheet_spans, running_index = _spans_from_sheet(
+                worksheet=worksheet,
+                document_id=document_id,
+                running_index=running_index,
+            )
+            spans.extend(sheet_spans)
+            warnings.extend(
+                _missing_formula_value_warnings(
+                    worksheet=worksheet,
+                    formula_worksheet=formula_worksheet,
                     path=relative,
-                    location=f"sheet={sheet_name}",
                 )
             )
-            continue
-        sheet_spans, running_index = _spans_from_sheet(
-            worksheet=worksheet,
-            document_id=document_id,
-            running_index=running_index,
-        )
-        spans.extend(sheet_spans)
-
-    workbook.close()
+    finally:
+        workbook.close()
+        formula_workbook.close()
 
     if not spans:
         warnings.append(
@@ -72,6 +91,36 @@ def read_xlsx(path: Path, *, document_id: str) -> ReaderResult:
         )
 
     return ReaderResult(spans=tuple(spans), warnings=tuple(warnings), parser=PARSER_NAME)
+
+
+def _missing_formula_value_warnings(
+    *,
+    worksheet: Worksheet,
+    formula_worksheet: Worksheet,
+    path: str,
+) -> list[ParserWarning]:
+    warnings: list[ParserWarning] = []
+    for row in formula_worksheet.iter_rows(values_only=False):
+        for formula_cell in row:
+            if formula_cell.data_type != "f":
+                continue
+            if worksheet[formula_cell.coordinate].value is not None:
+                continue
+            warnings.append(
+                ParserWarning(
+                    code=ParserWarningCode.EXTRACTION_FORMULA_VALUE_MISSING,
+                    message=(
+                        "Formula cell has no cached value and was not evaluated "
+                        "during offline ingestion."
+                    ),
+                    path=path,
+                    location=(
+                        f"sheet={formula_worksheet.title};"
+                        f"cell={formula_cell.coordinate}"
+                    ),
+                )
+            )
+    return warnings
 
 
 def _spans_from_sheet(

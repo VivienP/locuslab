@@ -13,24 +13,9 @@ These files are used for:
 - extraction recall/precision measurement (no committed numeric thresholds)
 - checker recall and false-positive measurement (no committed numeric thresholds)
 
-These files are **not** training data, are **not** used to set numeric pass
-thresholds before calibration, and are **not** shared with `eval/synthetic_dossier/`.
-
-## Isolation rule — `fixtures/gold/` vs `eval/synthetic_dossier/`
-
-The benchmark-isolation rule is the most important property of this annotation
-strategy. The two fixture trees measure different things:
-
-| | `fixtures/gold/` (this dir) | `eval/synthetic_dossier/` |
-|---|---|---|
-| Purpose | Demo regression, buyer reproducibility, dev iteration | Locked ECO recall benchmark |
-| Driven by | `scripts/run_demo.py` | `/eval` command (deferred) |
-| Numeric thresholds | Deferred until post-calibration | Locked (per benchmark-isolation skill) |
-| Annotation source | Span IDs against `fixtures/demo_dossier/` | Independent synthetic dossier (`eval/synthetic_dossier/`) |
-
-**Never** copy demo gold into `eval/`. **Never** modify `eval/synthetic_dossier/`
-when working in this directory. If the two converge, the eval becomes
-self-referential and stops measuring anything.
+These files are **not** training data and are **not** an independent benchmark.
+They are regression annotations for the same public demo fixture they describe;
+no calibrated recall or false-positive threshold is claimed.
 
 ## How these files were created
 
@@ -55,9 +40,9 @@ file changes, the gold files in this directory must be reviewed and likely
 regenerated.
 
 - `scripts/seed_demo_fixture.py` SHA-256 at annotation time:
-  `b32f5deddc846bbd64ea9af0dab2fae565d642ed7dd550bb19f90e15104d892b`
+  `d03610975a9163f5445aa1ed3b05a2e3e93c5da7a518cab1f01554c7e90983d3`
 - Annotation date: 2026-05-22
-- Ingestion produced: 4 documents, 47 spans, 1 parser warning (README.md,
+- Ingestion produced: 4 documents, 48 spans, 1 parser warning (README.md,
   expected — unsupported file type)
 - Annotator: founder review against real spans from the content readers
 
@@ -107,12 +92,12 @@ the seed script remains deterministic.
 | `README.md` | This file |
 | `demo_documents.json` | Expected documents from ingestion (regression check) |
 | `demo_spans.json` | Expected per-document/section span coverage (regression check) |
-| `demo_claims.json` | Claim candidates Phase 2 extractor should surface |
+| `demo_claims.json` | Selective claim candidates the shipped extractor must surface |
 | `demo_citations.json` | In-text citation mentions found in CER.docx |
 | `demo_bibliography.json` | Bibliography/source records and resolution targets |
 | `demo_evidence_links.json` | Expected claim → source links and unresolved cases |
 | `demo_numeric_facts.json` | Numeric values for rate/CI/denominator checks |
-| `demo_expected_findings.json` | Findings Phase 3 checkers SHOULD fire (recall measure) |
+| `demo_expected_findings.json` | Exact seven-finding contract for the demo run |
 | `demo_negative_tests.json` | Inputs checkers SHOULD NOT fire on (FP-rate measure) |
 
 `demo_expected_findings.json` and `demo_negative_tests.json` measure different
@@ -148,12 +133,10 @@ claim*, *NB will reject*, or *regulatory failure*.
 5. Re-pin the seed-script hash in this README.
 6. Submit as a reviewable change. Do not auto-regenerate.
 
-## Out of scope here
+## Executable contract
 
-This directory contains gold annotations only. It does **not** include:
-
-- A gold-vs-actual diff/evaluation tool (future Phase 2+).
-- Phase 2 extraction implementation.
-- Phase 3 checker implementation.
-- Report generation or graph persistence.
-- Pass/fail numeric thresholds (deferred until post-calibration).
+`tests/test_demo_gold_diff.py` resolves the selective gold annotations against
+the live claims, citations, sources, evidence links, and findings. Every
+annotated object must match exactly once. This is a regression contract for
+the shipped demo, not a calibrated performance threshold or an independent
+benchmark.

@@ -26,7 +26,9 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Runtime pins for a known-good set are in `requirements.lock`.
+Dependency ranges and development extras are declared in `pyproject.toml`,
+which is also the installation source used by CI. The repository does not
+claim a fully locked transitive environment.
 
 ## Demo
 
@@ -43,7 +45,7 @@ python scripts/run_demo.py --out tmp/demo
 Expected summary line:
 
 ```text
-18 claims, 5 citations, 3 sources, 18 evidence links, 8 findings, 105 graph records
+18 claims, 5 citations, 3 sources, 18 evidence links, 7 findings, 104 graph records
 ```
 
 Equivalent without the console script: `python -m locuslab.cli verify ...`.
@@ -58,8 +60,8 @@ Every run:
 | `citations.jsonl` | Parsed citation markers |
 | `sources.jsonl` | Local bibliography / source files |
 | `evidence_links.jsonl` | Claim-to-source links |
-| `findings.jsonl` | ECO findings (JSONL) |
-| `findings.csv` | ECO findings (CSV) |
+| `findings.jsonl` | Verification findings (JSONL) |
+| `findings.csv` | Verification findings (CSV) |
 | `graph.jsonl` | Graph-compatible records |
 | `audit_manifest.json` | Run metadata and artifact hashes |
 | `report.json` | Machine-readable report |
@@ -68,8 +70,11 @@ Every run:
 
 SSCP runs (filename or content routed as SSCP) also write
 `guidance_review.json` and `guidance_review.md`. Those are source-backed
-review aids, not ECO findings. The SSCP rule pack, inventory, and derived
+review aids, not verification findings. The SSCP rule pack, inventory, and derived
 Markdown travel with the installed package (`locuslab.resources`).
+
+In artifact schemas, `eco_id` is the historical field name for a deterministic
+finding ID with the `ECO-*` prefix; it does not identify a separate finding type.
 
 **Not produced:** `extracted_claims.csv`, `adjudication.csv`. Adjudication
 columns on `findings.xlsx` are empty stubs.

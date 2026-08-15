@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from locuslab.diagnostics import serialize_parser_warnings
 from locuslab.extract.citation_parser import CitationMention
 from locuslab.models import (
     Claim,
@@ -71,6 +72,7 @@ def _document_record(doc: Document) -> dict[str, object]:
     rec["sha256"] = doc.sha256
     rec["parser"] = doc.parser
     rec["parse_warning_codes"] = sorted({w.code.value for w in doc.parse_warnings})
+    rec["parse_warnings"] = serialize_parser_warnings(doc.parse_warnings)
     return rec
 
 
@@ -83,6 +85,7 @@ def _span_record(span: Span) -> dict[str, object]:
     rec["location_kind"] = span.location.kind.value
     rec["location_index"] = span.location.index
     rec["location_label"] = span.location.label
+    rec["extraction_warnings"] = serialize_parser_warnings(span.extraction_warnings)
     return rec
 
 
@@ -118,6 +121,7 @@ def _source_record(source: Source) -> dict[str, object]:
     rec["path"] = source.path
     rec["citation_key"] = source.citation_key
     rec["availability_status"] = source.availability_status
+    rec["origin_span_ids"] = list(source.origin_span_ids)
     return rec
 
 
@@ -128,6 +132,7 @@ def _evidence_link_record(link: EvidenceLink) -> dict[str, object]:
     rec["source_id"] = link.source_id
     rec["status"] = link.status
     rec["linking_method"] = link.linking_method
+    rec["candidate_source_ids"] = list(link.candidate_source_ids)
     return rec
 
 

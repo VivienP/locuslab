@@ -12,7 +12,7 @@ Status of the public-edition tree. This table is what a clone can run.
 | `findings.jsonl` + `findings.csv` | Implemented |
 | `graph.jsonl` + `audit_manifest.json` | Implemented |
 | `report.json` + `findings.xlsx` + `report.docx` | Implemented |
-| SSCP guidance review artifacts | Implemented on SSCP-routed runs; not ECO findings |
+| SSCP guidance review artifacts | Implemented on SSCP-routed runs; not verification findings |
 | MDCG/EUR-Lex source inventory + MD spine | Implemented; third-party texts are not Apache-2.0 |
 | Human adjudication CSV / workflow | Not implemented (stub package) |
 | Numeric mismatch / contradiction / rate checkers | Not implemented |

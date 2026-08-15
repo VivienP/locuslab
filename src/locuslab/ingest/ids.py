@@ -88,6 +88,13 @@ def make_evidence_link_id(
     claim_id: str,
     source_id: str | None,
     status: str,
+    candidate_source_ids: tuple[str, ...] = (),
 ) -> str:
     """Build stable evidence link ID."""
-    return stable_id("elink", claim_id, source_id or "", status)
+    return stable_id(
+        "elink",
+        claim_id,
+        source_id or "",
+        status,
+        *sorted(candidate_source_ids),
+    )

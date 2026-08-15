@@ -20,7 +20,7 @@ locus verify fixtures/demo_dossier --out tmp/demo
 Expected summary counts:
 
 ```text
-18 claims, 5 citations, 3 sources, 18 evidence links, 8 findings, 105 graph records
+18 claims, 5 citations, 3 sources, 18 evidence links, 7 findings, 104 graph records
 ```
 
 ## Inspect

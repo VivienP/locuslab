@@ -111,6 +111,30 @@ def test_read_xlsx_emits_empty_document_for_blank_workbook(tmp_path: Path) -> No
     assert result.spans == ()
 
 
+def test_read_xlsx_warns_when_formula_has_no_cached_value(tmp_path: Path) -> None:
+    path = tmp_path / "formula.xlsx"
+    workbook = Workbook()
+    worksheet = workbook.active
+    assert worksheet is not None
+    worksheet.title = "Data"
+    worksheet["A1"] = "Input"
+    worksheet["A2"] = 2
+    worksheet["B1"] = "Calculated"
+    worksheet["B2"] = "=A2*2"
+    workbook.save(path)
+
+    result = read_xlsx(path, document_id="doc_formula_xlsx")
+
+    warning = next(
+        warning
+        for warning in result.warnings
+        if warning.code == ParserWarningCode.EXTRACTION_FORMULA_VALUE_MISSING
+    )
+    assert warning.location == "sheet=Data;cell=B2"
+    assert "not evaluated" in warning.message.lower()
+    assert not any(span.location.label == "Data:B2" for span in result.spans)
+
+
 def test_read_xlsx_rejects_missing_file(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         read_xlsx(tmp_path / "absent.xlsx", document_id="doc_missing")

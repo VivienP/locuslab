@@ -78,12 +78,10 @@ class TestRefinementUnit:
         refined = _refine_kind_from_content(doc, spans)
         assert refined.kind == DocumentKind.CER
 
-    def test_marker_deep_in_body_not_reclassified(self) -> None:
-        """The scan is bounded to the first 5 spans to avoid mis-classifying
-        a CER body that references an SSCP in a later paragraph."""
+    def test_title_after_revision_history_reclassifies_to_sscp(self) -> None:
         doc = _make_doc(DocumentKind.OTHER, doc_id="doc_deep")
         spans = [
-            _make_span(f"Boilerplate paragraph {i}.", doc_id="doc_deep", span_id=f"span_{i}")
+            _make_span(f"Revision history row {i}.", doc_id="doc_deep", span_id=f"span_{i}")
             for i in range(10)
         ]
         spans.append(_make_span(
@@ -92,9 +90,19 @@ class TestRefinementUnit:
             span_id="span_late",
         ))
         refined = _refine_kind_from_content(doc, spans)
-        assert refined.kind == DocumentKind.OTHER, (
-            "Marker appearing after the scan limit must not trigger reclassification"
-        )
+        assert refined.kind == DocumentKind.SSCP
+
+    def test_narrative_reference_to_sscp_title_stays_other(self) -> None:
+        doc = _make_doc(DocumentKind.OTHER, doc_id="doc_reference")
+        spans = [
+            _make_span(
+                "The CER references the Summary of Safety and Clinical Performance "
+                "for additional public information.",
+                doc_id="doc_reference",
+            )
+        ]
+        refined = _refine_kind_from_content(doc, spans)
+        assert refined.kind == DocumentKind.OTHER
 
     def test_refinement_only_considers_spans_for_current_document(self) -> None:
         """Spans belonging to a different document_id must not influence

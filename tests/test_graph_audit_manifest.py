@@ -170,6 +170,23 @@ class TestGraphExportCompleteness:
         }
         assert span_ids_from_claims.issubset(by_family["span"])
 
+    def test_missing_sources_retain_resolvable_gspr_origin_spans(
+        self, demo_graph_records: list[dict[str, object]]
+    ) -> None:
+        graph_ids = {rec["record_id"] for rec in demo_graph_records}
+        missing_sources = [
+            rec
+            for rec in demo_graph_records
+            if rec["record_type"] == "source"
+            and rec["availability_status"] == "missing_file"
+        ]
+
+        assert missing_sources
+        for source in missing_sources:
+            origin_span_ids = source["origin_span_ids"]
+            assert origin_span_ids
+            assert set(origin_span_ids).issubset(graph_ids)  # type: ignore[arg-type]
+
 
 class TestFindingAffectedIdsResolve:
     def test_finding_affected_ids_resolve_to_graph_records_or_are_surfaced(
@@ -236,8 +253,43 @@ class TestManifestPresenceAndShape:
                 "sha256",
                 "parser",
                 "parse_warning_codes",
+                "parse_warnings",
             ):
                 assert key in entry, f"input_documents entry missing {key!r}"
+
+    def test_structured_parser_warnings_are_preserved_across_outputs(
+        self,
+        demo_run: Path,
+        demo_manifest: dict[str, object],
+        demo_graph_records: list[dict[str, object]],
+    ) -> None:
+        report = json.loads((demo_run / "report.json").read_text(encoding="utf-8"))
+        manifest_documents = {
+            document["document_id"]: document
+            for document in demo_manifest["input_documents"]  # type: ignore[union-attr]
+        }
+        report_documents = {
+            document["document_id"]: document
+            for document in report["input_documents"]
+        }
+        graph_documents = {
+            record["document_id"]: record
+            for record in demo_graph_records
+            if record["record_type"] == "document"
+        }
+
+        warned = [
+            document
+            for document in manifest_documents.values()
+            if document["parse_warnings"]
+        ]
+        assert warned, "Demo fixture should retain at least one parser diagnostic"
+        for document in warned:
+            document_id = document["document_id"]
+            warnings = document["parse_warnings"]
+            assert warnings == report_documents[document_id]["parse_warnings"]
+            assert warnings == graph_documents[document_id]["parse_warnings"]
+            assert set(warnings[0]) == {"code", "message", "path", "location"}
 
     def test_known_limitations_match_canonical_list(
         self, demo_manifest: dict[str, object]
@@ -253,7 +305,12 @@ class TestManifestHashesMatch:
         self, demo_run: Path, demo_manifest: dict[str, object]
     ) -> None:
         hashes = demo_manifest["artifact_hashes"]
-        for fname in PHASE_1_3_ARTIFACTS + ("graph.jsonl",):
+        for fname in PHASE_1_3_ARTIFACTS + (
+            "graph.jsonl",
+            "report.json",
+            "findings.xlsx",
+            "report.docx",
+        ):
             assert fname in hashes, f"Missing hash for {fname}"  # type: ignore[operator]
             expected = _sha256_bytes((demo_run / fname).read_bytes())
             assert hashes[fname] == expected, (  # type: ignore[index]
@@ -336,6 +393,26 @@ class TestManifestDeterminism:
         assert (run_a / "audit_manifest.json").read_bytes() == (
             run_b / "audit_manifest.json"
         ).read_bytes()
+
+    def test_relative_and_absolute_dossier_invocations_are_byte_equal(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        repository_root = Path(__file__).resolve().parent.parent
+        monkeypatch.chdir(repository_root)
+        relative_dossier = Path("fixtures/demo_dossier")
+        absolute_dossier = relative_dossier.resolve()
+        relative_run = tmp_path / "relative"
+        absolute_run = tmp_path / "absolute"
+
+        verify_dossier(relative_dossier, relative_run)
+        verify_dossier(absolute_dossier, absolute_run)
+
+        for artifact_name in ("graph.jsonl", "report.json", "audit_manifest.json"):
+            assert (relative_run / artifact_name).read_bytes() == (
+                absolute_run / artifact_name
+            ).read_bytes()
 
 
 class TestRunIdStability:

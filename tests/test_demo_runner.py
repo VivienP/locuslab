@@ -128,8 +128,8 @@ class TestRunDemoScriptOnFixture:
         assert "5 citations" in stdout
         assert "3 sources" in stdout
         assert "18 evidence links" in stdout
-        assert "8 findings" in stdout
-        assert "105 graph records" in stdout
+        assert "7 findings" in stdout
+        assert "104 graph records" in stdout
 
     def test_no_sources_warning_absent_on_fixture(self, stdout: str) -> None:
         # The demo dossier resolves 3 sources, so the "0 sources" warning
@@ -233,8 +233,8 @@ class TestLocusVerifyDemoCounts:
         assert "5 citations" in stdout
         assert "3 sources" in stdout
         assert "18 evidence links" in stdout
-        assert "8 findings" in stdout
-        assert "105 graph records" in stdout
+        assert "7 findings" in stdout
+        assert "104 graph records" in stdout
         docx = out / "report.docx"
         assert docx.is_file() and docx.stat().st_size > 0
         DocxRead(str(docx))

@@ -14,6 +14,7 @@ from locuslab.pipeline import verify_dossier
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 PACKAGED_GUIDANCE_FILES = (
+    "docs/THIRD_PARTY.md",
     "docs/rules/guidance/sscp/rule_pack.json",
     "docs/guidance/source_inventory.json",
     "docs/guidance/sources/mdcg/md_mdcg_2019_9_sscp_en.md",
@@ -21,6 +22,16 @@ PACKAGED_GUIDANCE_FILES = (
     "docs/guidance/sources/eurlex/article_32.md",
     "docs/guidance/sources/eurlex/article_61.md",
 )
+
+
+def test_byte_compared_guidance_json_is_pinned_to_lf() -> None:
+    attributes = (REPO_ROOT / ".gitattributes").read_text(encoding="utf-8")
+    for pattern in (
+        "docs/guidance/*.json text eol=lf",
+        "docs/rules/guidance/**/*.json text eol=lf",
+        "src/locuslab/resources/docs/**/*.json text eol=lf",
+    ):
+        assert pattern in attributes.splitlines()
 
 
 def test_packaged_guidance_files_exist() -> None:
@@ -34,7 +45,12 @@ def test_packaged_guidance_bytes_match_docs_source_of_truth() -> None:
     root = files("locuslab.resources")
     for rel in PACKAGED_GUIDANCE_FILES:
         packaged = root.joinpath(rel).read_bytes()
-        canonical = (REPO_ROOT / rel).read_bytes()
+        canonical_relative = (
+            Path("docs/THIRD_PARTY.md")
+            if rel == "docs/THIRD_PARTY.md"
+            else Path(rel)
+        )
+        canonical = (REPO_ROOT / canonical_relative).read_bytes()
         assert packaged == canonical, f"packaged copy drifted from {rel}"
 
 

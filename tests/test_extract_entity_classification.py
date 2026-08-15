@@ -6,21 +6,19 @@ All 29 tests are GREEN as of 2026-05-23 (P3 implemented + W-1 reviewer fix).
 Fixture strings are synthetic DemoDevice / SYNTHUDI shapes that preserve
 the original regex families (14-digit-ish UDI, NB 0123, EMDN, MR, standards).
 
-Target extractors (all new, all emit ClaimType.CLASSIFICATION):
+Target extractors:
   extract.classification.basic_udi_di:v1
   extract.classification.nb_number:v1
   extract.classification.emdn_code:v1
   extract.classification.mr_conditional:v1
-  extract.classification.harmonized_standard:v1
+  extract.classification.harmonized_standard:v1 (ClaimType.STANDARD_REFERENCE)
 
-Hard constraints (verbatim from owner brief):
-  - No new ClaimType enum value (all use ClaimType.CLASSIFICATION)
+Historical implementation constraints:
   - No new Claim fields (text, claim_type, extraction_method, span_id,
     document_id, confidence_label only)
   - No DocumentKind.IFU, no new DocumentKind
   - No verdict, checker, or EcoFinding logic
   - P1/P2/P4 modules and test files are not touched
-  - models.py is not modified
 """
 
 from __future__ import annotations
@@ -642,17 +640,17 @@ class TestHarmonizedStandard:
     )
 
     def test_en_iso_11135_extracted(self, extractor):
-        """EN ISO 11135:2014 must produce a CLASSIFICATION claim as harmonized standard."""
+        """EN ISO 11135:2014 must produce a dedicated standard-reference claim."""
         doc = _make_doc(_DOC_STENTS)
         span = _make_para_span("span_stents_std_1", _DOC_STENTS, self.STENTS_STANDARDS_SPAN)
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.claim_type == ClaimType.CLASSIFICATION
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
             and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         assert std_claims, (
-            f"Expected CLASSIFICATION claim for EN ISO 11135; "
+            f"Expected STANDARD_REFERENCE claim for EN ISO 11135; "
             f"got methods: {[c.extraction_method for c in claims]}"
         )
         assert any("ISO 11135" in c.text for c in std_claims), (
@@ -666,7 +664,8 @@ class TestHarmonizedStandard:
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.extraction_method == _METHOD_HARMONIZED_STANDARD
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
+            and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         # At minimum: ISO 11135, ISO 11737-1, ISO 13485, ISO 15223-1
         texts = " ".join(c.text for c in std_claims)
@@ -688,43 +687,47 @@ class TestHarmonizedStandard:
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.extraction_method == _METHOD_HARMONIZED_STANDARD
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
+            and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         assert std_claims, "Expected harmonized standard claim for ISO 10993-1 with amendment"
         assert any("10993" in c.text for c in std_claims)
 
     def test_iec_standard_extracted(self, extractor):
-        """IEC 60601-1 must produce a CLASSIFICATION claim as harmonized standard."""
+        """IEC 60601-1 must produce a standard-reference claim."""
         doc = _make_doc(_DOC_DemoDevice)
         span = _make_para_span("span_iec_std_1", _DOC_DemoDevice, self.IEC_STANDARD_SPAN)
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.extraction_method == _METHOD_HARMONIZED_STANDARD
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
+            and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         assert std_claims, "Expected harmonized standard claim for IEC 60601-1"
         assert any("60601" in c.text for c in std_claims)
 
     def test_astm_standard_extracted(self, extractor):
-        """ASTM F 136-13 must produce a CLASSIFICATION claim as harmonized standard."""
+        """ASTM F 136-13 must produce a standard-reference claim."""
         doc = _make_doc(_DOC_DemoDevice)
         span = _make_para_span("span_astm_std_1", _DOC_DemoDevice, self.ASTM_STANDARD_SPAN)
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.extraction_method == _METHOD_HARMONIZED_STANDARD
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
+            and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         assert std_claims, "Expected harmonized standard claim for ASTM F 136-13"
         assert any("136" in c.text or "ASTM" in c.text for c in std_claims)
 
     def test_usp_nf_standard_extracted(self, extractor):
-        """USP-NF 2023 <71> must produce a CLASSIFICATION claim as harmonized standard."""
+        """USP-NF 2023 <71> must produce a standard-reference claim."""
         doc = _make_doc(_DOC_DemoDevice)
         span = _make_para_span("span_usp_std_1", _DOC_DemoDevice, self.USP_STANDARD_SPAN)
         claims = extractor.extract_claims([span], [doc])
         std_claims = [
             c for c in claims
-            if c.extraction_method == _METHOD_HARMONIZED_STANDARD
+            if c.claim_type == ClaimType.STANDARD_REFERENCE
+            and c.extraction_method == _METHOD_HARMONIZED_STANDARD
         ]
         assert std_claims, "Expected harmonized standard claim for USP-NF 2023"
         assert any("USP" in c.text for c in std_claims)

@@ -1,15 +1,8 @@
-"""Map citations to Source records via normalized author-year keys.
-
-Engine-domain note: author-year normalization, bibliography-directory scanning,
-and Source record construction are domain-agnostic. The GSPR_MAPPING
-Evidence_Document column scan is MDR/IVDR-specific and should migrate into an
-MDR rule pack when pharma source-reference layouts (e.g. CSR appendix tables,
-TLF cross-references) need their own resolver paths. See
-docs/architecture.md "Engine Domain Discipline".
-"""
+"""Map MDR/IVDR dossier citations to sources via deterministic keys."""
 
 from __future__ import annotations
 
+import dataclasses
 import re
 from collections.abc import Sequence
 
@@ -48,6 +41,7 @@ class BibliographyResolver:
         """
         sources: list[Source] = []
         seen_source_ids: set[str] = set()
+        origin_span_ids_by_source: dict[str, set[str]] = {}
 
         # Build map of document_id -> document for quick lookup
         doc_map = {d.document_id: d for d in documents}
@@ -96,6 +90,7 @@ class BibliographyResolver:
             if filename in known_paths:
                 continue
             source_id = make_source_id(filename, None)
+            origin_span_ids_by_source.setdefault(source_id, set()).add(span.span_id)
             if source_id not in seen_source_ids:
                 seen_source_ids.add(source_id)
                 sources.append(
@@ -107,6 +102,15 @@ class BibliographyResolver:
                     )
                 )
 
+        sources = [
+            dataclasses.replace(
+                source,
+                origin_span_ids=tuple(
+                    sorted(origin_span_ids_by_source.get(source.source_id, set()))
+                ),
+            )
+            for source in sources
+        ]
         sources.sort(key=lambda s: s.source_id)
         return sources
 

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pytest
+from openpyxl import Workbook
 
 DEMO_DOSSIER = Path(__file__).parent.parent / "fixtures" / "demo_dossier"
 EXPECTED_JSONL_FILES = [
@@ -38,6 +40,84 @@ class TestProducesFourJsonlFiles:
     def test_output_dir_is_created(self, verify_result, run_dir):
         """Output directory must be created if it does not exist."""
         assert run_dir.is_dir(), "Output directory was not created"
+
+
+class TestOutputPathSafety:
+    @pytest.mark.parametrize("relationship", ["same", "descendant", "ancestor"])
+    def test_verify_rejects_input_output_overlap_without_writing(
+        self, tmp_path: Path, relationship: str
+    ) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        dossier = tmp_path / "workspace" / "dossier"
+        shutil.copytree(DEMO_DOSSIER, dossier)
+        sentinel = dossier / "report.docx"
+        sentinel.write_bytes(b"original user input")
+        before = sentinel.read_bytes()
+
+        if relationship == "same":
+            output_dir = dossier
+        elif relationship == "descendant":
+            output_dir = dossier / "run"
+        else:
+            output_dir = dossier.parent
+
+        with pytest.raises(ValueError, match="must not overlap"):
+            verify_dossier(dossier, output_dir)
+
+        assert sentinel.read_bytes() == before
+        assert not (output_dir / "claims.jsonl").exists()
+
+    def test_output_preflight_does_not_partially_delete_on_name_collision(
+        self, tmp_path: Path
+    ) -> None:
+        from locuslab.pipeline import OutputDirectoryError, verify_dossier
+
+        output_dir = tmp_path / "run"
+        output_dir.mkdir()
+        stale_claims = output_dir / "claims.jsonl"
+        stale_claims.write_bytes(b"previous run")
+        (output_dir / "report.docx").mkdir()
+
+        with pytest.raises(OutputDirectoryError, match="not a file"):
+            verify_dossier(DEMO_DOSSIER, output_dir)
+
+        assert stale_claims.read_bytes() == b"previous run"
+
+    def test_reused_output_preserves_unknown_files(self, tmp_path: Path) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        output_dir = tmp_path / "run"
+        output_dir.mkdir()
+        user_note = output_dir / "reviewer-notes.txt"
+        user_note.write_bytes(b"retain me")
+
+        verify_dossier(DEMO_DOSSIER, output_dir)
+
+        assert user_note.read_bytes() == b"retain me"
+
+
+def test_not_applicable_gspr_row_does_not_emit_major_finding(tmp_path: Path) -> None:
+    from locuslab.pipeline import verify_dossier
+
+    dossier = tmp_path / "dossier"
+    dossier.mkdir()
+    workbook = Workbook()
+    worksheet = workbook.active
+    assert worksheet is not None
+    worksheet.title = "GSPR"
+    worksheet.append(
+        ["GSPR_ID", "Requirement", "Applicable", "Evidence_Document", "Status"]
+    )
+    worksheet.append(
+        ["GSPR-01", "Requirement intentionally not applicable", "No", "", "Not Applicable"]
+    )
+    workbook.save(dossier / "GSPR_mapping.xlsx")
+    run_dir = tmp_path / "run"
+
+    verify_dossier(dossier, run_dir)
+
+    assert (run_dir / "findings.jsonl").read_text(encoding="utf-8") == ""
 
 
 class TestJsonlFilesWellFormed:
@@ -153,3 +233,21 @@ class TestCliSummary:
         assert "claims" in captured.out, f"'claims' not in stdout: {captured.out!r}"
         assert "citations" in captured.out, f"'citations' not in stdout: {captured.out!r}"
         assert "sources" in captured.out, f"'sources' not in stdout: {captured.out!r}"
+
+    def test_cli_rejects_dossier_with_only_corrupt_supported_input(
+        self, capsys: pytest.CaptureFixture[str], tmp_path: Path
+    ) -> None:
+        from locuslab.cli import main
+
+        dossier = tmp_path / "corrupt_dossier"
+        dossier.mkdir()
+        (dossier / "CER.docx").write_bytes(b"not a valid docx")
+        output_dir = tmp_path / "run"
+
+        code = main(["verify", str(dossier), "--out", str(output_dir)])
+
+        captured = capsys.readouterr()
+        assert code == 2
+        assert "no usable content" in captured.err.lower()
+        assert "Verified:" not in captured.out
+        assert not output_dir.exists()

@@ -14,16 +14,25 @@ bibliography directory layout are preserved.
 
 from __future__ import annotations
 
+import datetime as dt
 from pathlib import Path
 
 from docx import Document as DocxDocument
 from openpyxl import Workbook
 
+from locuslab.report.ooxml import canonicalise_ooxml
+
 FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "demo_dossier"
+_FIXED_TIMESTAMP = dt.datetime(2026, 1, 1, 0, 0, 0)
 
 
 def write_cer_docx(path: Path) -> None:
     doc = DocxDocument()
+    doc.core_properties.author = "LocusLab"
+    doc.core_properties.last_modified_by = "LocusLab"
+    doc.core_properties.created = _FIXED_TIMESTAMP
+    doc.core_properties.modified = _FIXED_TIMESTAMP
+    doc.core_properties.title = "LocusLab Demo CER"
     doc.add_heading("Clinical Evaluation Report - DemoDevice X100", level=1)
 
     doc.add_heading("1. Device Description", level=2)
@@ -63,10 +72,16 @@ def write_cer_docx(path: Path) -> None:
     row2[2].text = "Smith 2023"
 
     doc.save(path)
+    canonicalise_ooxml(path)
 
 
 def write_gspr_xlsx(path: Path) -> None:
     wb = Workbook()
+    wb.properties.creator = "LocusLab"
+    wb.properties.lastModifiedBy = "LocusLab"
+    wb.properties.created = _FIXED_TIMESTAMP
+    wb.properties.modified = _FIXED_TIMESTAMP
+    wb.properties.title = "LocusLab Demo GSPR Mapping"
     ws = wb.active
     assert ws is not None
     ws.title = "GSPR"
@@ -77,6 +92,7 @@ def write_gspr_xlsx(path: Path) -> None:
     ws.append(["GSPR-04", "Labeling complies with Annex I 23", "Yes", "Labeling.pdf", "Not Met"])
     ws.append(["GSPR-05", "Software lifecycle per IEC 62304", "Yes", "", ""])
     wb.save(path)
+    canonicalise_ooxml(path)
 
 
 def write_minimal_pdf(path: Path) -> None:

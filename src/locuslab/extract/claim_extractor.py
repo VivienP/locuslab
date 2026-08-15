@@ -1,12 +1,4 @@
-"""Deterministic regex + structural claim extraction from spans.
-
-Engine-domain note: numeric, citation, percent/CI, and count extractors are
-domain-agnostic. The classification extractor (Class I/IIa/IIb/III) and the
-GSPR-row completeness extractor (extractor_id ``extract.completeness.gspr:v1``)
-are MDR/IVDR-specific and should migrate into a rule pack
-(``src/locuslab/rules/mdr/``) when pharma extractors are added. See
-docs/architecture.md "Engine Domain Discipline".
-"""
+"""Deterministic claim extraction for the shipped MDR/IVDR dossier surface."""
 
 from __future__ import annotations
 
@@ -61,6 +53,13 @@ from locuslab.models import (
 # Section pattern indicating a GSPR Evidence_Document column cell
 _GSPR_EVIDENCE_DOC_SECTION = re.compile(r"D=Evidence_Document", re.IGNORECASE)
 _GSPR_REQUIREMENT_SECTION = re.compile(r"B=Requirement", re.IGNORECASE)
+_GSPR_APPLICABLE_SECTION = re.compile(r"C=Applicable", re.IGNORECASE)
+_GSPR_STATUS_SECTION = re.compile(r"E=Status", re.IGNORECASE)
+
+_GSPR_APPLICABLE_VALUES = frozenset({"yes", "y", "true", "1", "applicable"})
+_GSPR_NOT_APPLICABLE_VALUES = frozenset(
+    {"no", "n", "false", "0", "not applicable", "n/a", "na"}
+)
 
 # Parse the trailing row number from a GSPR cell label, e.g. "GSPR:B5" -> 5.
 _GSPR_ROW_FROM_LABEL = re.compile(r"^[^:]+:[A-Z](\d+)$")
@@ -109,10 +108,12 @@ class ClaimExtractor:
 
     _citation_parser: CitationParser
     _gspr_rows_with_evidence_doc: frozenset[tuple[str, int]]
+    _gspr_applicable_rows: frozenset[tuple[str, int]]
 
     def __init__(self) -> None:
         self._citation_parser = CitationParser()
         self._gspr_rows_with_evidence_doc = frozenset()
+        self._gspr_applicable_rows = frozenset()
 
     def extract_claims(
         self,
@@ -125,6 +126,7 @@ class ClaimExtractor:
         """
         doc_map = {d.document_id: d for d in documents}
         self._gspr_rows_with_evidence_doc = _compute_gspr_rows_with_evidence_doc(spans)
+        self._gspr_applicable_rows = _compute_gspr_applicable_rows(spans)
         claims: list[Claim] = []
         for span in spans:
             doc = doc_map.get(span.document_id)
@@ -176,13 +178,10 @@ class ClaimExtractor:
         # Track character ranges consumed by PERCENTAGE_WITH_CI so we don't
         # double-count the percentage value or the CI range separately.
         consumed_ranges: list[tuple[int, int]] = []
-        seen_values: set[str] = set()
 
         # Compound percentage+CI pattern (e.g. "87.4% (95% CI: 82.1-91.6)")
         for m in PERCENTAGE_WITH_CI.finditer(text):
             raw = (m.group("pct") + " " + m.group("ci_paren")).strip()
-            val = m.group("pct").strip().rstrip("%").strip()
-            seen_values.add(val)
             consumed_ranges.append((m.start(), m.end()))
             normalized = _normalize_text(raw)
             claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))
@@ -201,10 +200,6 @@ class ClaimExtractor:
             for m in PERCENTAGE_DECIMAL.finditer(text):
                 if _in_consumed(m.start(), m.end()):
                     continue
-                val = m.group("value")
-                if val in seen_values:
-                    continue
-                seen_values.add(val)
                 raw = m.group(0).strip()
                 normalized = _normalize_text(raw)
                 claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))
@@ -214,10 +209,6 @@ class ClaimExtractor:
             for m in _PERCENT_WORD.finditer(text):
                 if _in_consumed(m.start(), m.end()):
                     continue
-                val = m.group("value")
-                if val in seen_values:
-                    continue  # already captured above
-                seen_values.add(val)
                 raw = m.group(0).strip()
                 normalized = _normalize_text(raw)
                 claims.append(_make(normalized, raw, _EXTRACTOR_NUMERIC_PCT))
@@ -397,12 +388,14 @@ class ClaimExtractor:
 
         return claims
 
-    def _make_classification_claim(
+    def _make_entity_claim(
         self,
         span: Span,
         raw: str,
         extractor_id: str,
         occurrence_index: int,
+        *,
+        claim_type: ClaimType = ClaimType.CLASSIFICATION,
     ) -> Claim:
         normalized = _normalize_text(raw)
         claim_id = make_claim_id(
@@ -417,7 +410,7 @@ class ClaimExtractor:
             document_id=span.document_id,
             span_id=span.span_id,
             text=raw,
-            claim_type=ClaimType.CLASSIFICATION,
+            claim_type=claim_type,
             extraction_method=extractor_id,
             confidence_label=ConfidenceLabel.HIGH,
         )
@@ -430,7 +423,7 @@ class ClaimExtractor:
             raw = m.group(0).strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_MR_CONDITIONAL, occurrence_counters[raw]
                 )
             )
@@ -444,7 +437,7 @@ class ClaimExtractor:
             raw = m.group(0).strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_NB_NUMBER, occurrence_counters[raw]
                 )
             )
@@ -460,7 +453,7 @@ class ClaimExtractor:
             raw = m.group("code").strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_BASIC_UDI_DI, occurrence_counters[raw]
                 )
             )
@@ -476,7 +469,7 @@ class ClaimExtractor:
             raw = m.group("code").strip()
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
+                self._make_entity_claim(
                     span, raw, _EXTRACTOR_EMDN_CODE, occurrence_counters[raw]
                 )
             )
@@ -497,8 +490,12 @@ class ClaimExtractor:
             raw = f"{body} {code}"
             occurrence_counters[raw] = occurrence_counters.get(raw, 0) + 1
             claims.append(
-                self._make_classification_claim(
-                    span, raw, _EXTRACTOR_HARMONIZED_STANDARD, occurrence_counters[raw]
+                self._make_entity_claim(
+                    span,
+                    raw,
+                    _EXTRACTOR_HARMONIZED_STANDARD,
+                    occurrence_counters[raw],
+                    claim_type=ClaimType.STANDARD_REFERENCE,
                 )
             )
         return claims
@@ -635,10 +632,12 @@ class ClaimExtractor:
     def _extract_completeness(self, span: Span, doc: Document | None) -> list[Claim]:
         """Extract completeness claims for GSPR rows with no Evidence_Document cell.
 
-        Fires only on a Requirement (column B) whose row has no Evidence_Document (column D).
-        The xlsx_reader drops empty cells, so an absent D-column on a B-column row is the signal.
-        Rows with a declared Evidence_Document — even an unresolvable one — are out of scope here.
-        That case is a Phase 3 source-availability concern, not a Phase 2 completeness claim.
+        Fires only on a Requirement (column B) whose row is explicitly applicable
+        (column C), is not marked Not Applicable in Status (column E), and has no
+        Evidence_Document (column D). The xlsx_reader drops empty cells, so an
+        absent D-column on an eligible B-column row is the signal. Rows with a
+        declared Evidence_Document — even an unresolvable one — are handled by
+        the source-availability checker.
         """
         if doc is None or doc.kind != DocumentKind.GSPR_MAPPING:
             return []
@@ -651,7 +650,10 @@ class ClaimExtractor:
         row_number = _row_number_from_label(span.location.label)
         if row_number is None:
             return []
-        if (span.document_id, row_number) in self._gspr_rows_with_evidence_doc:
+        row_key = (span.document_id, row_number)
+        if row_key not in self._gspr_applicable_rows:
+            return []
+        if row_key in self._gspr_rows_with_evidence_doc:
             return []
         normalized = _normalize_text(text)
         claim_id = make_claim_id(
@@ -696,3 +698,28 @@ def _compute_gspr_rows_with_evidence_doc(
             continue
         rows.add((span.document_id, row_number))
     return frozenset(rows)
+
+
+def _compute_gspr_applicable_rows(
+    spans: Sequence[Span],
+) -> frozenset[tuple[str, int]]:
+    applicability_by_row: dict[tuple[str, int], str] = {}
+    status_by_row: dict[tuple[str, int], str] = {}
+    for span in spans:
+        row_number = _row_number_from_label(span.location.label)
+        if row_number is None:
+            continue
+        row_key = (span.document_id, row_number)
+        section = span.section or ""
+        value = _normalize_text(span.text)
+        if _GSPR_APPLICABLE_SECTION.search(section):
+            applicability_by_row[row_key] = value
+        elif _GSPR_STATUS_SECTION.search(section):
+            status_by_row[row_key] = value
+
+    return frozenset(
+        row_key
+        for row_key, value in applicability_by_row.items()
+        if value in _GSPR_APPLICABLE_VALUES
+        and status_by_row.get(row_key) not in _GSPR_NOT_APPLICABLE_VALUES
+    )

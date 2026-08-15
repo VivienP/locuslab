@@ -4,7 +4,7 @@ This file matches the shipped `locus verify` behavior. It is not a roadmap.
 
 ## Checkers
 
-Four deterministic families emit ECO findings:
+Four deterministic families emit verification findings:
 
 - `broken_citation_anchor`
 - `unresolved_evidence_link`
@@ -23,7 +23,7 @@ Not implemented (also recorded in `KNOWN_LIMITATIONS` in
 ## Guidance review
 
 SSCP guidance items are review aids (`guidance_review.json` /
-`guidance_review.md`). They are never ECO findings. The SSCP rule pack,
+`guidance_review.md`). They are never verification findings. The SSCP rule pack,
 inventory, and derived Markdown are packaged under `locuslab.resources`
 (byte-equal to `docs/`). Official PDFs stay in `docs/guidance/sources/`
 and are not installed into the wheel.

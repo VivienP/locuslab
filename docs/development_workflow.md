@@ -5,7 +5,7 @@
 See `docs/IMPLEMENTED.md` and `docs/LIMITATIONS.md`. The shipped CLI runs
 ingestion, deterministic extraction and linking, four checker families, graph
 export, audit manifest, and the report package. SSCP-routed runs may add
-guidance-review artifacts that are not ECO findings.
+guidance-review artifacts that are not verification findings.
 
 ## Current Phase
 

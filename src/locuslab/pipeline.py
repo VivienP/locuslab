@@ -26,15 +26,37 @@ from locuslab.guidance.assets import (
     RULE_PACK_RELPATH,
     load_guidance_payload,
 )
-from locuslab.ingest import load_dossier
+from locuslab.ingest import DossierLoadError, load_dossier
 from locuslab.linking.bibliography_resolver import BibliographyResolver
 from locuslab.linking.evidence_linker import EvidenceLinker
+from locuslab.models import DocumentKind
 from locuslab.output import write_findings_csv, write_jsonl
 from locuslab.report import write_report_package
 
 
 class VerificationNotImplementedError(RuntimeError):
     """Raised until a future pipeline stage is implemented."""
+
+
+class OutputDirectoryError(ValueError):
+    """Raised when a run output path could overwrite dossier or user data."""
+
+
+_GENERATED_ARTIFACT_NAMES: tuple[str, ...] = (
+    "claims.jsonl",
+    "citations.jsonl",
+    "sources.jsonl",
+    "evidence_links.jsonl",
+    "findings.jsonl",
+    "findings.csv",
+    "graph.jsonl",
+    "guidance_review.json",
+    "guidance_review.md",
+    "audit_manifest.json",
+    "report.json",
+    "findings.xlsx",
+    "report.docx",
+)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -52,6 +74,46 @@ class VerifyResult:
     """Phase 6D: count of guidance review items written; None when skipped."""
 
 
+def _validate_output_path(dossier_dir: Path, output_dir: Path) -> None:
+    dossier_path = dossier_dir.resolve()
+    output_path = output_dir.resolve()
+    if (
+        dossier_path == output_path
+        or dossier_path.is_relative_to(output_path)
+        or output_path.is_relative_to(dossier_path)
+    ):
+        raise OutputDirectoryError(
+            "Dossier and output directories must not overlap: "
+            f"dossier={dossier_path}, output={output_path}"
+        )
+    if output_path.exists() and not output_path.is_dir():
+        raise OutputDirectoryError(f"Output path is not a directory: {output_path}")
+
+
+def _prepare_output_directory(output_dir: Path) -> None:
+    """Remove only known run artifacts before writing a replacement run."""
+    try:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        existing_artifacts = tuple(
+            output_dir / name
+            for name in _GENERATED_ARTIFACT_NAMES
+            if (output_dir / name).exists() or (output_dir / name).is_symlink()
+        )
+        for artifact_path in existing_artifacts:
+            if not artifact_path.is_symlink() and not artifact_path.is_file():
+                raise OutputDirectoryError(
+                    f"Generated artifact path is not a file: {artifact_path}"
+                )
+        for artifact_path in existing_artifacts:
+            artifact_path.unlink()
+    except OutputDirectoryError:
+        raise
+    except OSError as exc:
+        raise OutputDirectoryError(
+            f"Output directory could not be prepared: {output_dir}: {exc}"
+        ) from exc
+
+
 def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     """Verify a dossier and write pipeline artifacts.
 
@@ -63,10 +125,23 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     Raises DossierLoadError if the dossier directory cannot be loaded.
     """
+    _validate_output_path(dossier_dir, output_dir)
     result = load_dossier(dossier_dir)
+    if not result.spans:
+        warning_codes = sorted({warning.code.value for warning in result.warnings})
+        warning_detail = (
+            f" Parser warnings: {', '.join(warning_codes)}."
+            if warning_codes
+            else ""
+        )
+        raise DossierLoadError(
+            "Dossier yielded no usable content spans from supported inputs."
+            f"{warning_detail}"
+        )
 
     documents = list(result.documents)
     spans = list(result.spans)
+    canonical_dossier_path = result.dossier_dir.as_posix()
 
     claims = ClaimExtractor().extract_claims(spans, documents)
     citations = CitationParser().parse_citations(spans)
@@ -76,7 +151,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     findings = run_checkers(claims, citations, sources, evidence_links)
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+    _prepare_output_directory(output_dir)
     write_jsonl(claims, output_dir / "claims.jsonl")
     write_jsonl(citations, output_dir / "citations.jsonl")
     write_jsonl(sources, output_dir / "sources.jsonl")
@@ -126,6 +201,11 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
             guidance_evaluations = evaluate_sscp_rules(
                 rule_pack=guidance_rule_pack,
                 spans=spans,
+                allowed_document_ids=frozenset(
+                    document.document_id
+                    for document in documents
+                    if document.kind == DocumentKind.SSCP
+                ),
                 md_text_by_source_id=md_text_by_source_id,
             )
             artifact_counts["guidance_review_items"] = len(guidance_evaluations)
@@ -144,7 +224,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
 
     graph_records = build_graph_records(
         run_id=run_id,
-        dossier_path=str(dossier_dir),
+        dossier_path=canonical_dossier_path,
         documents=documents,
         spans=spans,
         claims=claims,
@@ -192,7 +272,7 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     ]
     if guidance_evaluations is not None:
         hashed_artifacts.extend(["guidance_review.json", "guidance_review.md"])
-    artifact_hashes = {
+    source_artifact_hashes = {
         name: hash_artifact(output_dir / name) for name in hashed_artifacts
     }
 
@@ -202,6 +282,34 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
     unresolved_affected_ids = compute_unresolved_affected_ids(
         findings, collect_record_ids(graph_records)
     )
+
+    report_basis_manifest = build_manifest(
+        run_id=run_id,
+        documents=documents,
+        artifact_counts=artifact_counts,
+        artifact_hashes=source_artifact_hashes,
+        extraction_methods=extraction_methods,
+        checker_ids=checker_ids,
+        linking_methods=linking_methods,
+        unresolved_affected_ids=unresolved_affected_ids,
+    )
+    # Reports quote hashes of their source artifacts. The final manifest is
+    # written afterwards so it can hash those reports without a digest cycle.
+    write_report_package(
+        documents=documents,
+        claims=claims,
+        evidence_links=evidence_links,
+        findings=findings,
+        audit_manifest=report_basis_manifest,
+        dossier_path=canonical_dossier_path,
+        artifact_counts=artifact_counts,
+        output_dir=output_dir,
+        sources=sources,
+    )
+
+    artifact_hashes = dict(source_artifact_hashes)
+    for name in ("report.json", "findings.xlsx", "report.docx"):
+        artifact_hashes[name] = hash_artifact(output_dir / name)
 
     manifest = build_manifest(
         run_id=run_id,
@@ -214,22 +322,6 @@ def verify_dossier(dossier_dir: Path, output_dir: Path) -> VerifyResult:
         unresolved_affected_ids=unresolved_affected_ids,
     )
     write_manifest(manifest, output_dir / "audit_manifest.json")
-
-    # Phase 5 — buyer-facing report package (report.json, findings.xlsx, report.docx).
-    # Quotes Phase 4 manifest fields (run_id, artifact_hashes, known_limitations)
-    # rather than re-deriving them, keeping the Phase 4 audit_manifest.json
-    # byte-equal across runs.
-    write_report_package(
-        documents=documents,
-        claims=claims,
-        evidence_links=evidence_links,
-        findings=findings,
-        audit_manifest=manifest,
-        dossier_path=str(dossier_dir),
-        artifact_counts=artifact_counts,
-        output_dir=output_dir,
-        sources=sources,
-    )
 
     return VerifyResult(
         n_claims=len(claims),

@@ -63,11 +63,11 @@ def _make_source(
     )
 
 
-DOC_ID_CER = "doc_1dd5a3cd674157b5"
-PIVOTAL_SPAN_ID = "span_b0fecd4907e13acc"
-BENEFIT_RISK_SPAN_ID = "span_05f0a0e4c6224e9f"
-DEVICE_DESC_SPAN_ID = "span_a3d42d0561575263"
-GSPR03_SPAN_ID = "span_ecbca6c827a929d4"
+DOC_ID_CER = "doc_082f6fd5afc0df84"
+PIVOTAL_SPAN_ID = "span_d9abfffa43fb7cbf"
+BENEFIT_RISK_SPAN_ID = "span_a624a5422820d068"
+DEVICE_DESC_SPAN_ID = "span_79b2f99f4a85ffbd"
+GSPR03_SPAN_ID = "span_9aecef465e65d326"
 
 
 @pytest.fixture()
@@ -119,6 +119,36 @@ class TestResolvedLink:
         )
         assert resolved_links[0].claim_id == "claim_test_001"
         assert resolved_links[0].source_id == "src_test_001"
+
+    def test_duplicate_citation_key_is_ambiguous_and_order_independent(
+        self, linker, parser
+    ):
+        span = _make_span(
+            PIVOTAL_SPAN_ID,
+            DOC_ID_CER,
+            "Performance was reported by (Smith et al., 2023).",
+        )
+        citations = parser.parse_citations([span])
+        claim = _make_claim(
+            "claim_ambiguous",
+            DOC_ID_CER,
+            PIVOTAL_SPAN_ID,
+            "Performance was reported",
+            ClaimType.CLINICAL_PERFORMANCE,
+        )
+        sources = [
+            _make_source("src_b", "bibliography/b.pdf", "smith_2023", "local_fulltext"),
+            _make_source("src_a", "bibliography/a.pdf", "smith_2023", "local_fulltext"),
+        ]
+
+        first = linker.link([claim], citations, sources)[0]
+        second = linker.link([claim], citations, list(reversed(sources)))[0]
+
+        assert first == second
+        assert first.status == "source_ambiguous"
+        assert first.source_id is None
+        assert first.linking_method == "explicit_citation_ambiguous"
+        assert first.candidate_source_ids == ("src_a", "src_b")
 
 
 class TestSourceUnresolved:

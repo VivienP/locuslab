@@ -1,4 +1,4 @@
-"""Shared model vocabulary for LocusLab V1 scaffolding."""
+"""Shared model vocabulary for the LocusLab MDR/IVDR verification engine."""
 
 from __future__ import annotations
 
@@ -7,17 +7,7 @@ from enum import StrEnum
 
 
 class DocumentKind(StrEnum):
-    """Supported dossier document categories.
-
-    MDR/IVDR-specific taxonomy. The CER/PMS/PSUR/PMCF/SSCP/GSPR_MAPPING members
-    encode the V1 wedge. EVIDENCE_TABLE, SOURCE_PDF, and OTHER are
-    domain-agnostic. Per docs/architecture.md "Engine Domain Discipline", the
-    MDR-specific members should migrate into a pluggable rule pack
-    (e.g. src/locuslab/rules/mdr/) when Stage-2 pharma artifacts (CSR,
-    protocol, SAP, biomarker, safety narrative, literature) need their own
-    document taxonomy. Engine primitives must not branch on these members;
-    only MDR rule packs may.
-    """
+    """Supported MDR/IVDR dossier document categories."""
 
     CER = "CER"
     PMS = "PMS"
@@ -41,6 +31,7 @@ class ParserWarningCode(StrEnum):
     EXTRACTION_EMPTY_DOCUMENT = "extraction_empty_document"
     EXTRACTION_UNREADABLE_FILE = "extraction_unreadable_file"
     EXTRACTION_PARTIAL_CONTENT = "extraction_partial_content"
+    EXTRACTION_FORMULA_VALUE_MISSING = "extraction_formula_value_missing"
 
 
 class SpanLocationKind(StrEnum):
@@ -63,6 +54,7 @@ class ClaimType(StrEnum):
     BENEFIT_RISK = "benefit_risk"
     COMPLETENESS = "completeness"
     CLASSIFICATION = "classification"
+    STANDARD_REFERENCE = "standard_reference"
     OTHER = "other"
 
 
@@ -76,7 +68,7 @@ class ConfidenceLabel(StrEnum):
 
 
 class FindingSeverity(StrEnum):
-    """ECO severity vocabulary."""
+    """Verification-finding severity vocabulary."""
 
     CRITICAL = "Critical"
     MAJOR = "Major"
@@ -159,6 +151,7 @@ class Source:
     path: str | None
     citation_key: str | None
     availability_status: str
+    origin_span_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -170,11 +163,12 @@ class EvidenceLink:
     source_id: str | None
     status: str
     linking_method: str
+    candidate_source_ids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class Finding:
-    """RA/QA-readable ECO finding shell."""
+    """RA/QA-readable verification finding."""
 
     eco_id: str
     severity: FindingSeverity

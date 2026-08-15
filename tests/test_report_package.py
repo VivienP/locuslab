@@ -108,11 +108,11 @@ class TestReportJsonShape:
     ) -> None:
         assert demo_report_json["run_id"] == demo_audit_manifest["run_id"]
 
-    def test_artifact_counts_findings_eight_on_demo(
+    def test_artifact_counts_findings_seven_on_demo(
         self, demo_report_json: dict[str, object]
     ) -> None:
         counts = demo_report_json["artifact_counts"]
-        assert counts["findings"] == 8  # type: ignore[index]
+        assert counts["findings"] == 7  # type: ignore[index]
 
     def test_findings_detail_length_matches_findings_jsonl(
         self, demo_run: Path, demo_report_json: dict[str, object]
@@ -140,15 +140,20 @@ class TestReportJsonShape:
     ) -> None:
         assert demo_report_json["known_limitations"] == demo_audit_manifest["known_limitations"]
 
-    def test_source_artifact_hashes_quote_audit_manifest(
+    def test_source_artifact_hashes_are_verified_subset_of_manifest(
         self,
         demo_report_json: dict[str, object],
         demo_audit_manifest: dict[str, object],
     ) -> None:
-        assert (
-            demo_report_json["source_artifact_hashes"]
-            == demo_audit_manifest["artifact_hashes"]
-        )
+        source_hashes = demo_report_json["source_artifact_hashes"]
+        manifest_hashes = demo_audit_manifest["artifact_hashes"]
+        assert source_hashes
+        assert source_hashes.items() <= manifest_hashes.items()  # type: ignore[union-attr]
+        assert not {
+            "report.json",
+            "findings.xlsx",
+            "report.docx",
+        } & source_hashes.keys()  # type: ignore[union-attr]
 
 
 class TestReportJsonForbiddenLanguage:
@@ -393,6 +398,21 @@ class TestPhase4UnchangedByPhase5:
         verify_dossier(DEMO_DOSSIER, run_b)
         assert (run_a / "graph.jsonl").read_bytes() == (
             run_b / "graph.jsonl"
+        ).read_bytes()
+
+    @pytest.mark.parametrize("artifact_name", ["findings.xlsx", "report.docx"])
+    def test_ooxml_reports_are_byte_equal_across_runs(
+        self, tmp_path: Path, artifact_name: str
+    ) -> None:
+        from locuslab.pipeline import verify_dossier
+
+        run_a = tmp_path / "run_a"
+        run_b = tmp_path / "run_b"
+        verify_dossier(DEMO_DOSSIER, run_a)
+        verify_dossier(DEMO_DOSSIER, run_b)
+
+        assert (run_a / artifact_name).read_bytes() == (
+            run_b / artifact_name
         ).read_bytes()
 
 

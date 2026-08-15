@@ -44,6 +44,12 @@ Every `locus verify` run writes:
 SSCP-routed runs also write `guidance_review.json` and `guidance_review.md`
 (review aids, not ECO findings).
 
+When an output directory is reused, the pipeline preflights and replaces only
+the artifact names in this contract. Optional artifacts from the previous run
+are removed, while files with unrelated names are preserved. A directory or
+other non-file occupying a generated artifact name aborts the run before any
+previous artifact is removed.
+
 Not written: `extracted_claims.csv`, `adjudication.csv`.
 
 ## Core Object Model
@@ -67,11 +73,21 @@ Ingestion converts each supported file into spans:
   no text layer emit `EXTRACTION_NO_TEXT_LAYER` and produce no span; OCR is out
   of V1 scope.
 - `.xlsx` via `openpyxl`: one span per non-empty cell. Header row context is
-  propagated onto each data cell via `Span.section`.
+  propagated onto each data cell via `Span.section`. Formulas are never
+  evaluated by LocusLab; a formula without a cached workbook value emits the
+  structured `extraction_formula_value_missing` diagnostic and no inferred
+  value.
 
 Dossier PDF ingestion stays on `pypdf`. The optional extra `guidance-extract`
 uses `pdfplumber` only to derive Markdown from committed guidance PDFs.
 Readers must remain offline; network access is forbidden inside ingestion.
+The loader preserves parser diagnostics even for unreadable files. The
+verification pipeline fails before writing a run when the complete dossier
+yields zero usable spans, so corrupt or empty inputs cannot produce a
+successful zero-content audit.
+Manifest, graph, and JSON report document records retain each diagnostic's
+code, message, dossier-relative path, and optional location; the legacy
+`parse_warning_codes` summary remains available for compact consumers.
 
 ## Checker Philosophy
 
@@ -91,29 +107,26 @@ Do not use embeddings, LLMs, or semantic similarity as final verdict machinery.
 
 V1 persists graph-ready data in `graph.jsonl` or SQLite. IDs and records must remain compatible with later RDF/SPARQL export, but V1 does not run a graph server.
 
-V1 uses `audit_manifest.json` for reproducibility metadata and artifact hashes. Cryptographic proof infrastructure is deferred until finding quality and buyer demand justify it.
+V1 uses `audit_manifest.json` for reproducibility metadata and SHA-256 hashes
+of every generated run artifact except the manifest itself. Reports embed the
+hashes of the source artifacts used to build them; the manifest is finalized
+after the byte-stable report package is written. Cryptographic proof
+infrastructure is deferred until finding quality and buyer demand justify it.
+The graph and reports record the resolved dossier root with POSIX separators,
+so relative and absolute invocations of the same local dossier are identical.
 
-## Engine Domain Discipline
+## Domain Scope
 
-The MDR/IVDR document families are the V1 application surface. The engine underneath should stay domain-agnostic so the same pipeline can later verify other scientific outputs (for example CSR, protocol, SAP, clinical-trial claims, biomarker claims, safety narratives, and literature claims) without rewriting ingestion, linking, graph, or audit primitives.
+LocusLab V1 is MDR/IVDR-specific. Its document taxonomy, extraction patterns,
+GSPR routing, SSCP guidance checks, finding categories, and report language all
+encode that regulatory context. Some implementation techniques are reusable,
+including file readers, content hashing, stable identifiers, and canonical
+artifact writers, but no cross-domain compatibility is claimed.
 
-Domain-agnostic layers — must not encode MDR/IVDR vocabulary, enums, or assumptions:
-
-- Core object model: `Document`, `Span`, `Claim`, `Source`, `EvidenceLink`, `Finding`, `AdjudicationEvent`, `AuditRun`.
-- Ingestion readers (`.docx`, `.pdf`, `.xlsx`) and `SpanLocation`.
-- Claim extraction primitives (numeric, citation, classification, performance) and their extraction-method labels.
-- Citation parsing and bibliography resolution.
-- Evidence link status vocabulary (`resolved`, `source_unresolved`, `source_missing`, `manual_review_required`).
-- Graph record shape (`graph.jsonl`/SQLite) and audit manifest schema.
-
-MDR/IVDR-specific layers — domain knowledge belongs here:
-
-- ECO category codes, severity rules, and finding wording.
-- Document-taxonomy heuristics for CER, PMS/PSUR, PMCF, SSCP, GSPR.
-- Checker rule packs and fixtures.
-- Buyer-facing report templates and section labels.
-
-Changes should not push MDR/IVDR vocabulary into the generic primitives, and should not move generic verification logic into the MDR-specific layers. A future non-MDR rule pack should be addable without modifying the domain-agnostic layers above.
+Support for another regulatory or scientific domain would require an explicit
+product specification, public-surface update, implementation, and fixtures.
+The current release does not ship a plugin or rule-pack boundary that would
+make such support automatic.
 
 ## Deferred Complexity
 

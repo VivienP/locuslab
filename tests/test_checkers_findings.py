@@ -114,6 +114,7 @@ def _make_link(
     status: str,
     source_id: str | None = None,
     linking_method: str = "no_link_found",
+    candidate_source_ids: tuple[str, ...] = (),
 ) -> EvidenceLink:
     return EvidenceLink(
         evidence_link_id=link_id,
@@ -121,6 +122,7 @@ def _make_link(
         source_id=source_id,
         status=status,
         linking_method=linking_method,
+        candidate_source_ids=candidate_source_ids,
     )
 
 
@@ -129,12 +131,14 @@ def _make_source(
     availability_status: str,
     citation_key: str | None = None,
     path: str | None = None,
+    origin_span_ids: tuple[str, ...] = (),
 ) -> Source:
     return Source(
         source_id=source_id,
         path=path,
         citation_key=citation_key,
         availability_status=availability_status,
+        origin_span_ids=origin_span_ids,
     )
 
 
@@ -147,8 +151,8 @@ class TestBrokenCitationAnchor:
     def test_bracketed_numeric_without_resolution_emits_finding(self):
         cite = _make_citation(
             "cite_bracket_1",
-            "doc_1dd5a3cd674157b5",
-            "span_05f0a0e4c6224e9f",
+            "doc_082f6fd5afc0df84",
+            "span_a624a5422820d068",
             marker_form="numeric_bracketed",
             marker_text="[1]",
             normalized_key=None,
@@ -159,8 +163,8 @@ class TestBrokenCitationAnchor:
         assert findings[0].finding_type == "unresolved_citation_marker"
         assert findings[0].checker_id == CHECKER_BROKEN_CITATION
         assert "[1]" in findings[0].evidence
-        assert "doc_1dd5a3cd674157b5" in findings[0].affected_object_ids
-        assert "span_05f0a0e4c6224e9f" in findings[0].affected_object_ids
+        assert "doc_082f6fd5afc0df84" in findings[0].affected_object_ids
+        assert "span_a624a5422820d068" in findings[0].affected_object_ids
         assert findings[0].adjudication_state == AdjudicationState.PENDING
         _assert_conservative_language(findings[0].evidence)
         _assert_conservative_language(findings[0].remediation_hint)
@@ -254,6 +258,24 @@ class TestUnresolvedEvidenceLink:
         findings = check_unresolved_evidence_link([link], claims=[])
         assert findings == []
 
+    def test_ambiguous_link_names_all_candidate_sources(self):
+        claim = _make_claim("claim_ambiguous")
+        link = _make_link(
+            "link_ambiguous",
+            claim.claim_id,
+            status="source_ambiguous",
+            linking_method="explicit_citation_ambiguous",
+            candidate_source_ids=("src_b", "src_a"),
+        )
+
+        findings = check_unresolved_evidence_link([link], [claim])
+
+        assert len(findings) == 1
+        assert findings[0].finding_type == "claim_with_ambiguous_sources"
+        assert "multiple local sources" in findings[0].evidence
+        assert "src_a" in findings[0].affected_object_ids
+        assert "src_b" in findings[0].affected_object_ids
+
 
 # ===========================================================================
 # Family 3 — source_availability_gap
@@ -267,6 +289,7 @@ class TestSourceAvailabilityGap:
             availability_status="missing_file",
             citation_key=None,
             path="bibliography/PMS.docx",
+            origin_span_ids=("span_gspr_pms",),
         )
         claim = _make_claim("claim_pms", claim_type=ClaimType.COMPLETENESS)
         link = _make_link(
@@ -283,6 +306,7 @@ class TestSourceAvailabilityGap:
         assert findings[0].checker_id == CHECKER_SOURCE_AVAILABILITY
         assert "PMS.docx" in findings[0].evidence
         assert "not located" in findings[0].evidence
+        assert "span_gspr_pms" in findings[0].affected_object_ids
         _assert_conservative_language(findings[0].evidence)
         _assert_conservative_language(findings[0].remediation_hint)
 
@@ -308,6 +332,8 @@ class TestSourceAvailabilityGap:
         assert len(findings) == 1
         assert findings[0].finding_type == "completeness_gap_applicable_but_no_evidence"
         assert findings[0].severity == FindingSeverity.MAJOR
+        assert "has no evidence document reference" in findings[0].evidence.lower()
+        assert "is referenced" not in findings[0].evidence.lower()
 
     def test_missing_file_source_no_critical_severity(self):
         # MVP severity discipline: zero Critical on synthetic dossiers.
@@ -343,6 +369,12 @@ class TestManualReviewRequired:
         # structural noise and must be filtered.
         claim = _make_claim("claim_num", claim_type=ClaimType.NUMERIC)
         link = _make_link("link_num", claim.claim_id, status="manual_review_required")
+        findings = check_manual_review_required([link], [claim])
+        assert findings == []
+
+    def test_standard_reference_with_manual_review_is_filtered_out(self):
+        claim = _make_claim("claim_std", claim_type=ClaimType.STANDARD_REFERENCE)
+        link = _make_link("link_std", claim.claim_id, status="manual_review_required")
         findings = check_manual_review_required([link], [claim])
         assert findings == []
 

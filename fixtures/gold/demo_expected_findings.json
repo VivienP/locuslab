@@ -1,126 +1,56 @@
 {
-  "schema_version": 1,
-  "annotation_date": "2026-05-22",
-  "purpose": "Findings Phase 3 deterministic checkers (or LLM-extraction + adjudication for ECO-MANUAL) SHOULD fire on the demo dossier. Each entry is a recall target for the checker corresponding to its eco_id category.",
-  "severity_discipline": "Severity follows the ECO rule, not the demo's narrative impact. No Critical findings on this synthetic fixture — Critical is reserved for deterministic contradictions affecting central safety/performance conclusions on a real claim. Major requires a deterministic contradiction or serious unresolved evidence. Minor for structural/local issues. Informational for review notes.",
-  "language_discipline": "Conservative wording per no-confident-verdict-without-evidence skill. Use 'potentially unsupported', 'unresolved evidence link', 'requires manual review', 'inconsistent extracted value', 'source not located in provided package'. Avoid 'non-compliant', 'false claim', 'NB will reject', 'regulatory failure', 'AI proves'.",
+  "schema_version": 2,
+  "annotation_date": "2026-08-14",
+  "purpose": "Exact selective contract for the seven deterministic findings emitted by the demo dossier.",
   "expected_findings": [
     {
       "gold_id": "GOLD-FINDING-001",
-      "eco_id": "ECO-COMPLETENESS-001",
       "severity": "Major",
-      "finding_type": "completeness_gap_applicable_but_no_evidence",
-      "affected_object_ids": [
-        "doc_84039664cf6a7d66",
-        "span_ee990923c2c55bcd",
-        "span_f62adf8dc89ee97e",
-        "span_dec6078ed4b3ca9f"
-      ],
-      "evidence_summary": "GSPR row GSPR-05 declared Applicable='Yes' but no Evidence_Document is referenced; completeness gap requires manual review.",
-      "remediation_hint": "Add an Evidence_Document reference for GSPR-05 'Software lifecycle per IEC 62304', or change Applicable to 'No' with a justification.",
-      "deterministic_basis": "GSPR row contains spans for GSPR_ID, Requirement, Applicable=Yes, but no spans for Evidence_Document or Status (those cells are absent from the xlsx_reader output because they are blank).",
-      "rationale": "Most reliable seeded finding. The structural gap is detectable purely from the absence of expected column spans in row 6, no LLM required.",
-      "notes": "Severity Major (per ECO rule) because GSPR completeness is a Notified-Body-facing artifact. Not Critical because this is a synthetic fixture, not a real safety contradiction."
+      "finding_type": "unresolved_citation_marker",
+      "affected_span_id": "span_a624a5422820d068",
+      "evidence_fragment": "has no in-document references list"
     },
     {
       "gold_id": "GOLD-FINDING-002",
-      "eco_id": "ECO-CITE-001",
       "severity": "Major",
-      "finding_type": "unresolved_citation_marker",
-      "affected_object_ids": [
-        "doc_1dd5a3cd674157b5",
-        "span_05f0a0e4c6224e9f"
-      ],
-      "evidence_summary": "Unresolved citation marker '[1]' in CER benefit-risk conclusion; no matching bibliography entry found.",
-      "remediation_hint": "Add a numbered references list to CER.docx that defines [1], or replace the marker with an author-year citation that resolves to bibliography/source-study.pdf.",
-      "deterministic_basis": "Span text contains '[1]'. No corresponding numbered references list span exists anywhere in CER.docx. No file under bibliography/ matches a numeric key.",
-      "rationale": "Bracketed-numeric markers without a numbered references list are a deterministic structural defect. Detectable without LLM.",
-      "notes": "Severity Major because the unresolved marker sits in the benefit-risk conclusion — the most consequential claim in the document — and the reader cannot trace the evidence chain."
+      "finding_type": "evidence_document_referenced_but_missing",
+      "affected_span_id": "span_9aecef465e65d326",
+      "evidence_fragment": "PMS.docx"
     },
     {
       "gold_id": "GOLD-FINDING-003",
-      "eco_id": "ECO-SRC-001",
       "severity": "Major",
-      "finding_type": "potentially_unsupported_claim",
-      "affected_object_ids": [
-        "doc_1dd5a3cd674157b5",
-        "span_05f0a0e4c6224e9f"
-      ],
-      "evidence_summary": "Benefit-risk conclusion is potentially unsupported; no evidence link found. Requires manual review.",
-      "remediation_hint": "Provide an in-line citation in the benefit-risk paragraph that resolves to a local source, or attach a benefit-risk justification document.",
-      "deterministic_basis": "Combined with GOLD-FINDING-002: the only citation marker in this span ('[1]') does not resolve, and no other source is referenced. EvidenceLink count for the claim = 0.",
-      "rationale": "Companion to GOLD-FINDING-002. Different ECO category because the failure mode is 'claim has no evidence link', not 'citation marker is broken'. Both should fire together on this span.",
-      "notes": "Severity Major. Language is deliberately 'potentially unsupported' (not 'unsupported') because no evidence link is not equivalent to evidence of falsity."
+      "finding_type": "completeness_gap_applicable_but_no_evidence",
+      "affected_span_id": "span_d721352940869c5e",
+      "evidence_fragment": "has no evidence document reference"
     },
     {
       "gold_id": "GOLD-FINDING-004",
-      "eco_id": "ECO-MALFORMED-001",
-      "severity": "Minor",
-      "finding_type": "ambiguous_confidence_interval_binding",
-      "affected_object_ids": [
-        "doc_faf32261b7e7f62a",
-        "span_d5adf35599369595"
-      ],
-      "evidence_summary": "Malformed numeric structure on source-study page 2: a confidence interval ('95 percent: 82.1 to 91.6') co-occurs with the adverse event rate (3.2 percent) but textually belongs to the response rate reported on page 1. CI cannot be parsed safely without cross-page context.",
-      "remediation_hint": "Restructure the source-study text so each numeric value is followed by its own CI on the same line, or move the CI to page 1 next to the 87.4% response rate.",
-      "deterministic_basis": "Span text contains both a percentage ('3.2 percent') and a CI ('95 percent: 82.1 to 91.6') with no syntactic anchor binding the CI to one or the other.",
-      "rationale": "Ambiguous CI binding is a deterministic structural defect, detectable by a parser that requires a CI to be on the same line as its rate.",
-      "notes": "Severity Minor — this is a source-document quality issue, not a contradiction in the CER. The CER reports the CI correctly bound to the response rate."
+      "severity": "Major",
+      "finding_type": "evidence_document_referenced_but_missing",
+      "affected_span_id": "span_2aa7fc1d3d8f114b",
+      "evidence_fragment": "Labeling.pdf"
     },
     {
       "gold_id": "GOLD-FINDING-005",
-      "eco_id": "ECO-MANUAL-001",
       "severity": "Informational",
-      "finding_type": "classification_rationale_requires_manual_review",
-      "affected_object_ids": [
-        "doc_1dd5a3cd674157b5",
-        "span_a3d42d0561575263"
-      ],
-      "evidence_summary": "Device classification asserted as 'Class IIa active medical device' without inline rationale. Requires manual review by RA for classification rationale.",
-      "remediation_hint": "Add a reference to the classification rationale (MDR Annex VIII rule applied, or a separate classification document).",
-      "deterministic_basis": "Span asserts a Class designation but provides no traceability to MDR Annex VIII rules.",
-      "rationale": "Classification rationale is regulatory judgment territory, not a deterministic check. ECO-MANUAL is the correct category; eco_id is set, severity is Informational so it does not block.",
-      "notes": "This is the ECO-MANUAL category exemplar for the demo. Severity Informational because classification correctness cannot be deterministically asserted from text alone."
+      "finding_type": "evidence_link_requires_manual_review",
+      "affected_span_id": "span_34348cc49f123629",
+      "evidence_fragment": "requires manual review"
     },
     {
       "gold_id": "GOLD-FINDING-006",
-      "eco_id": "ECO-COMPLETENESS-002",
-      "severity": "Minor",
-      "finding_type": "evidence_document_referenced_but_missing",
-      "affected_object_ids": [
-        "doc_84039664cf6a7d66",
-        "span_12d909781c271856",
-        "span_ecbca6c827a929d4",
-        "span_7046d32769da1ca5"
-      ],
-      "evidence_summary": "GSPR-03 references Evidence_Document 'PMS.docx' with Status='Met', but PMS.docx is not present in the provided dossier package. Source not located in provided package.",
-      "remediation_hint": "Add PMS.docx to the dossier package or update GSPR-03 to reference the actual evidence file.",
-      "deterministic_basis": "Cell D4 value 'PMS.docx' has no matching file under fixtures/demo_dossier/. Status cell E4 asserts 'Met' despite the missing file.",
-      "rationale": "Status='Met' combined with a missing evidence file is a deterministic inconsistency. Severity Minor because GSPR-03 is the post-market surveillance row, not a central safety claim.",
-      "notes": "Distinct from GOLD-FINDING-001: there a value is absent; here a value is present but unresolvable."
+      "severity": "Informational",
+      "finding_type": "classification_rationale_requires_manual_review",
+      "affected_span_id": "span_79b2f99f4a85ffbd",
+      "evidence_fragment": "requires manual review by RA"
     },
     {
       "gold_id": "GOLD-FINDING-007",
-      "eco_id": "ECO-COMPLETENESS-003",
-      "severity": "Informational",
-      "finding_type": "evidence_document_referenced_but_missing_with_status_not_met",
-      "affected_object_ids": [
-        "doc_84039664cf6a7d66",
-        "span_33b1b957d4c7ec34",
-        "span_48f8fa48bdf57f24",
-        "span_89d06a973239eddd"
-      ],
-      "evidence_summary": "GSPR-04 references Evidence_Document 'Labeling.pdf' which is not present in the provided package. Status='Not Met' already acknowledges the gap; informational flag for traceability.",
-      "remediation_hint": "Provide Labeling.pdf and update Status to 'Met' once labeling conformance is demonstrated.",
-      "deterministic_basis": "Cell D5 value 'Labeling.pdf' has no matching file. Cell E5 value 'Not Met' is consistent with the missing file.",
-      "rationale": "Same structural pattern as GOLD-FINDING-006 but the dossier itself flags the gap via Status='Not Met'. Lower severity because the inconsistency is already acknowledged.",
-      "notes": "Severity Informational. This finding is mostly a traceability marker, not an additional gap claim."
+      "severity": "Major",
+      "finding_type": "claim_without_resolved_source",
+      "affected_span_id": "span_a624a5422820d068",
+      "evidence_fragment": "has no resolved local source"
     }
-  ],
-  "uncertainty_and_calibration_notes": [
-    "ECO-NUM is intentionally NOT seeded in this fixture. The numeric values across CER and source-study actually agree (87.4 and 3.2 percent, n=412). The plan's draft ECO-NUM-001 (numeric mismatch) does not apply to the current fixture content and would require fabricating a value to seed.",
-    "ECO-ALIGN is intentionally NOT seeded. Both CER and source-study describe the 'safety population' / 'cohort' with the same n=412; a lexical-alignment check would only fire if 'safety population' vs 'cohort' is treated as different. That ambiguity belongs to NT-003 (negative test) not to expected findings.",
-    "ECO-SRC superseded-version finding from the plan is NOT seeded. There is only one version of Smith 2023 in the current fixture.",
-    "False-positive budget is NOT committed here. It is calibrated after the first Phase 3 checker pass produces observed behavior."
   ]
 }

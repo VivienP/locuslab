@@ -20,7 +20,7 @@
     },
     {
       "gold_id": "GOLD-SPANS-002",
-      "document_id": "doc_1dd5a3cd674157b5",
+      "document_id": "doc_082f6fd5afc0df84",
       "relative_path": "CER.docx",
       "expected_span_count": 18,
       "expected_location_kinds": {"paragraph": 9, "table_cell": 9},
@@ -36,7 +36,7 @@
     },
     {
       "gold_id": "GOLD-SPANS-003",
-      "document_id": "doc_84039664cf6a7d66",
+      "document_id": "doc_8c19005d83747c9a",
       "relative_path": "GSPR_mapping.xlsx",
       "expected_span_count": 28,
       "expected_location_kinds": {"table_cell": 28},
@@ -53,7 +53,7 @@
     },
     {
       "gold_id": "GOLD-SPANS-004",
-      "document_id": "doc_3be01493e3e2758a",
+      "document_id": "doc_10d06a9ffa9d19de",
       "relative_path": "README.md",
       "expected_span_count": 0,
       "expected_location_kinds": {},
@@ -64,45 +64,45 @@
   "per_section_anchors": [
     {
       "gold_id": "GOLD-SECTION-CER-CLINICAL-PERFORMANCE",
-      "document_id": "doc_1dd5a3cd674157b5",
+      "document_id": "doc_082f6fd5afc0df84",
       "section": "2. Clinical Performance",
       "expected_span_count": 3,
       "anchor_span_ids": [
-        "span_a8367094e2edbd3b",
-        "span_b0fecd4907e13acc",
-        "span_8c8ef5d659e6ba6d"
+        "span_7aee30176f7d7b31",
+        "span_d9abfffa43fb7cbf",
+        "span_5066a18e9866378c"
       ],
       "notes": "One heading + two body paragraphs (pivotal endpoint + adverse event rate). These are the main claim-bearing spans in the CER and are heavily referenced by demo_claims.json."
     },
     {
       "gold_id": "GOLD-SECTION-CER-BENEFIT-RISK",
-      "document_id": "doc_1dd5a3cd674157b5",
+      "document_id": "doc_082f6fd5afc0df84",
       "section": "3. Benefit-Risk Conclusion",
       "expected_span_count": 2,
       "anchor_span_ids": [
-        "span_8aa270a7acaa4e1e",
-        "span_05f0a0e4c6224e9f"
+        "span_a50951d1311a0f4d",
+        "span_a624a5422820d068"
       ],
       "notes": "Heading + the benefit-risk paragraph carrying the orphan citation marker [1]. See demo_citations.json GOLD-CITE-002 for the unresolved-marker case."
     },
     {
       "gold_id": "GOLD-SECTION-CER-APPENDIX-A",
-      "document_id": "doc_1dd5a3cd674157b5",
+      "document_id": "doc_082f6fd5afc0df84",
       "section": "Appendix A - Endpoint Summary Table",
       "expected_span_count": 10,
       "anchor_span_ids": [
-        "span_45c888f2d64592ca",
-        "span_e31a48f80aba3913",
-        "span_bca966dc1ddc3f45",
-        "span_3e48f3c1b8e8dc75",
-        "span_393b1aa62763c9a6",
-        "span_f2d247fb17db6de0",
-        "span_f806d14a167a8098",
-        "span_e0deb26012a527ef",
-        "span_cddf2fa99a826279",
-        "span_b4c87ceb0705b8d7"
+        "span_498d7f0f765e31f9",
+        "span_d6fdda0095d6c9e0",
+        "span_ae17dcadb04a3c88",
+        "span_a7a46a27b32ff7ea",
+        "span_97b150ab5c35c87b",
+        "span_0f469791718b865b",
+        "span_69a3f528ae7051bf",
+        "span_be645d062e590a11",
+        "span_cc33a9b3040be134",
+        "span_fd86849fd101a31b"
       ],
-      "notes": "One heading + 3 header cells + 6 data cells. The numeric value cells (span_f2d247fb17db6de0 = '87.4%' and span_cddf2fa99a826279 = '3.2%') anchor numeric facts in demo_numeric_facts.json."
+      "notes": "One heading + 3 header cells + 6 data cells. The numeric value cells (span_0f469791718b865b = '87.4%' and span_cc33a9b3040be134 = '3.2%') anchor numeric facts in demo_numeric_facts.json."
     }
   ]
 }

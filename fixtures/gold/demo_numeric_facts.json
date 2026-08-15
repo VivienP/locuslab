@@ -5,8 +5,8 @@
   "expected_numeric_facts": [
     {
       "gold_id": "GOLD-NUM-001",
-      "document_id": "doc_1dd5a3cd674157b5",
-      "span_id": "span_b0fecd4907e13acc",
+      "document_id": "doc_082f6fd5afc0df84",
+      "span_id": "span_d9abfffa43fb7cbf",
       "value": 87.4,
       "unit": "percent",
       "denominator": 412,
@@ -22,8 +22,8 @@
     },
     {
       "gold_id": "GOLD-NUM-002",
-      "document_id": "doc_1dd5a3cd674157b5",
-      "span_id": "span_8c8ef5d659e6ba6d",
+      "document_id": "doc_082f6fd5afc0df84",
+      "span_id": "span_5066a18e9866378c",
       "value": 3.2,
       "unit": "percent",
       "denominator": 412,
@@ -35,8 +35,8 @@
     },
     {
       "gold_id": "GOLD-NUM-003",
-      "document_id": "doc_1dd5a3cd674157b5",
-      "span_id": "span_f2d247fb17db6de0",
+      "document_id": "doc_082f6fd5afc0df84",
+      "span_id": "span_0f469791718b865b",
       "value": 87.4,
       "unit": "percent",
       "denominator": null,
@@ -48,8 +48,8 @@
     },
     {
       "gold_id": "GOLD-NUM-004",
-      "document_id": "doc_1dd5a3cd674157b5",
-      "span_id": "span_cddf2fa99a826279",
+      "document_id": "doc_082f6fd5afc0df84",
+      "span_id": "span_cc33a9b3040be134",
       "value": 3.2,
       "unit": "percent",
       "denominator": null,
