@@ -14,16 +14,10 @@ from locuslab.ingest.reader_base import ReaderResult
 from locuslab.ingest.xlsx_reader import read_xlsx
 from locuslab.models import Document, DocumentKind, ParserWarning, ParserWarningCode, Span
 
-# Number of leading spans scanned for SSCP content marker.
-# 5 spans bounds runtime and avoids matching a CER that references an SSCP
-# deep in the body. The marker is the MDR Article 32 statutory title.
-# DELIBERATE FALSE NEGATIVE: a real SSCP whose title block sits past span 5
-# (e.g. an industry doc with a long revision-history table above the title)
-# will stay kind=OTHER. See docs/architecture.md and
-# tests/test_sscp_content_router.py
-# for the scan-bound regression case.
+# The marker is the MDR Article 32 statutory title. Matching is limited to a
+# title-like span so revision-history blocks may precede it without turning a
+# narrative reference elsewhere in a document into an SSCP classification.
 _SSCP_CONTENT_MARKER = "summary of safety and clinical performance"
-_SSCP_CONTENT_SCAN_LIMIT = 5
 
 SUPPORTED_CONTENT_EXTENSIONS = frozenset({".docx", ".pdf", ".xlsx"})
 
@@ -64,9 +58,8 @@ def load_dossier(dossier_dir: Path) -> DossierLoadResult:
 
     for path in _iter_dossier_files(root):
         document, spans = _ingest_file(path=path, root=root)
-        # Phase 6E-prep-D: content-based SSCP refinement. Only fires when
-        # the filename heuristic returned OTHER, so filename-classified
-        # docs (CER, PMCF, SSCP-by-name, ...) keep their kind.
+        # Content refinement only applies when the filename heuristic returned
+        # OTHER, so filename-classified documents keep their kind.
         document = _refine_kind_from_content(document, spans)
         documents.append(document)
         all_spans.extend(spans)
@@ -85,32 +78,33 @@ def load_dossier(dossier_dir: Path) -> DossierLoadResult:
 def _refine_kind_from_content(
     document: Document, spans: Sequence[Span]
 ) -> Document:
-    """Phase 6E-prep-D: reclassify OTHER -> SSCP when first spans contain
-    the verbatim MDR Article 32 SSCP title.
+    """Reclassify OTHER -> SSCP when a span is the MDR Article 32 title.
 
     Only fires for documents currently classified as OTHER. Filename-
     classified documents (CER, PMCF, SSCP-by-name, ...) are returned
-    unchanged. The scan is bounded to the first _SSCP_CONTENT_SCAN_LIMIT
-    spans of the document to avoid matching a CER that references an SSCP
-    deep in the body.
+    unchanged. A title-shaped match avoids classifying narrative references.
     """
     if document.kind != DocumentKind.OTHER:
         return document
     doc_spans = [span for span in spans if span.document_id == document.document_id]
-    for span in doc_spans[:_SSCP_CONTENT_SCAN_LIMIT]:
-        if _SSCP_CONTENT_MARKER in span.text.lower():
+    for span in doc_spans:
+        if _is_sscp_title_span(span.text):
             return dataclasses.replace(document, kind=DocumentKind.SSCP)
     return document
 
 
-def infer_document_kind(path: Path) -> DocumentKind:
-    """Infer a broad document kind from a dossier-relative path.
+def _is_sscp_title_span(text: str) -> bool:
+    normalized = " ".join(text.casefold().split()).strip()
+    if normalized == _SSCP_CONTENT_MARKER:
+        return True
+    return any(
+        normalized.startswith(f"{_SSCP_CONTENT_MARKER}{separator}")
+        for separator in (":", " -", " –", " —")
+    )
 
-    MDR/IVDR-specific filename heuristic. Per docs/architecture.md "Engine
-    Domain Discipline", this taxonomy belongs in an MDR rule pack and should
-    move out of the ingestion layer when pharma document taxonomies (CSR,
-    protocol, SAP, etc.) are added.
-    """
+
+def infer_document_kind(path: Path) -> DocumentKind:
+    """Infer an MDR/IVDR document kind from a dossier-relative path."""
     suffix = path.suffix.lower()
     normalized_stem = path.stem.lower().replace("-", "_").replace(" ", "_")
     tokens = {token for token in normalized_stem.split("_") if token}
@@ -171,7 +165,7 @@ def _ingest_file(path: Path, root: Path) -> tuple[Document, tuple[Span, ...]]:
         warnings_list: list[ParserWarning] = [
             ParserWarning(
                 code=ParserWarningCode.UNSUPPORTED_FILE_TYPE,
-                message="File extension is not part of the Phase 1b DOCX/PDF/XLSX reader set.",
+                message="File extension is not supported; expected DOCX, PDF, or XLSX.",
                 path=relative_path,
             )
         ]
