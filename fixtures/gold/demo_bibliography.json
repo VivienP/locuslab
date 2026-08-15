@@ -28,8 +28,8 @@
   "expected_external_references": [
     {
       "gold_id": "GOLD-BIB-EXT-001",
-      "referenced_in_document_id": "doc_84039664cf6a7d66",
-      "referenced_in_span_id": "span_ecbca6c827a929d4",
+      "referenced_in_document_id": "doc_8c19005d83747c9a",
+      "referenced_in_span_id": "span_9aecef465e65d326",
       "referenced_value": "PMS.docx",
       "expected_availability_status": "missing_file",
       "rationale": "GSPR-03 declares PMS.docx as Evidence_Document, but no PMS.docx exists in fixtures/demo_dossier/. This is a real cross-reference that does not resolve.",
@@ -37,8 +37,8 @@
     },
     {
       "gold_id": "GOLD-BIB-EXT-002",
-      "referenced_in_document_id": "doc_84039664cf6a7d66",
-      "referenced_in_span_id": "span_48f8fa48bdf57f24",
+      "referenced_in_document_id": "doc_8c19005d83747c9a",
+      "referenced_in_span_id": "span_2aa7fc1d3d8f114b",
       "referenced_value": "Labeling.pdf",
       "expected_availability_status": "missing_file",
       "rationale": "GSPR-04 declares Labeling.pdf as Evidence_Document with Status='Not Met'. The file is not present in fixtures/demo_dossier/. Cross-reference does not resolve.",

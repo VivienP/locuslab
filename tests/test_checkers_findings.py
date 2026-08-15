@@ -151,8 +151,8 @@ class TestBrokenCitationAnchor:
     def test_bracketed_numeric_without_resolution_emits_finding(self):
         cite = _make_citation(
             "cite_bracket_1",
-            "doc_1dd5a3cd674157b5",
-            "span_05f0a0e4c6224e9f",
+            "doc_082f6fd5afc0df84",
+            "span_a624a5422820d068",
             marker_form="numeric_bracketed",
             marker_text="[1]",
             normalized_key=None,
@@ -163,8 +163,8 @@ class TestBrokenCitationAnchor:
         assert findings[0].finding_type == "unresolved_citation_marker"
         assert findings[0].checker_id == CHECKER_BROKEN_CITATION
         assert "[1]" in findings[0].evidence
-        assert "doc_1dd5a3cd674157b5" in findings[0].affected_object_ids
-        assert "span_05f0a0e4c6224e9f" in findings[0].affected_object_ids
+        assert "doc_082f6fd5afc0df84" in findings[0].affected_object_ids
+        assert "span_a624a5422820d068" in findings[0].affected_object_ids
         assert findings[0].adjudication_state == AdjudicationState.PENDING
         _assert_conservative_language(findings[0].evidence)
         _assert_conservative_language(findings[0].remediation_hint)

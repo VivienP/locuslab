@@ -2,7 +2,7 @@
   "schema_version": 1,
   "annotation_date": "2026-05-22",
   "fixture_root": "fixtures/demo_dossier",
-  "seed_script_sha256": "b32f5deddc846bbd64ea9af0dab2fae565d642ed7dd550bb19f90e15104d892b",
+  "seed_script_sha256": "e4a99e69f61a1539022eb9cc0209a9eb8b2274b131fd50f6993e5555340abbc3",
   "purpose": "Regression check on ingestion output. Each entry pins document_id, kind, parser, and warning count for the corresponding file under fixtures/demo_dossier/.",
   "documents": [
     {
@@ -19,7 +19,7 @@
     },
     {
       "gold_id": "GOLD-DOC-002",
-      "document_id": "doc_1dd5a3cd674157b5",
+      "document_id": "doc_082f6fd5afc0df84",
       "kind": "CER",
       "relative_path": "CER.docx",
       "expected_parser": "python-docx",
@@ -31,7 +31,7 @@
     },
     {
       "gold_id": "GOLD-DOC-003",
-      "document_id": "doc_84039664cf6a7d66",
+      "document_id": "doc_8c19005d83747c9a",
       "kind": "GSPR_MAPPING",
       "relative_path": "GSPR_mapping.xlsx",
       "expected_parser": "openpyxl",
@@ -43,7 +43,7 @@
     },
     {
       "gold_id": "GOLD-DOC-004",
-      "document_id": "doc_3be01493e3e2758a",
+      "document_id": "doc_10d06a9ffa9d19de",
       "kind": "OTHER",
       "relative_path": "README.md",
       "expected_parser": "unsupported-file",

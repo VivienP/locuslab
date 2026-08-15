@@ -9,3 +9,7 @@ docs/guidance/*.json text eol=lf
 docs/rules/guidance/**/*.json text eol=lf
 src/locuslab/resources/docs/**/*.md text eol=lf
 src/locuslab/resources/docs/**/*.json text eol=lf
+fixtures/**/*.docx binary
+fixtures/**/*.xlsx binary
+fixtures/**/*.pdf binary
+scripts/seed_demo_fixture.py text eol=lf

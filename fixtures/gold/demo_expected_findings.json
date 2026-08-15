@@ -7,49 +7,49 @@
       "gold_id": "GOLD-FINDING-001",
       "severity": "Major",
       "finding_type": "unresolved_citation_marker",
-      "affected_span_id": "span_05f0a0e4c6224e9f",
+      "affected_span_id": "span_a624a5422820d068",
       "evidence_fragment": "has no in-document references list"
     },
     {
       "gold_id": "GOLD-FINDING-002",
       "severity": "Major",
       "finding_type": "evidence_document_referenced_but_missing",
-      "affected_span_id": "span_ecbca6c827a929d4",
+      "affected_span_id": "span_9aecef465e65d326",
       "evidence_fragment": "PMS.docx"
     },
     {
       "gold_id": "GOLD-FINDING-003",
       "severity": "Major",
       "finding_type": "completeness_gap_applicable_but_no_evidence",
-      "affected_span_id": "span_f62adf8dc89ee97e",
+      "affected_span_id": "span_d721352940869c5e",
       "evidence_fragment": "has no evidence document reference"
     },
     {
       "gold_id": "GOLD-FINDING-004",
       "severity": "Major",
       "finding_type": "evidence_document_referenced_but_missing",
-      "affected_span_id": "span_48f8fa48bdf57f24",
+      "affected_span_id": "span_2aa7fc1d3d8f114b",
       "evidence_fragment": "Labeling.pdf"
     },
     {
       "gold_id": "GOLD-FINDING-005",
       "severity": "Informational",
       "finding_type": "evidence_link_requires_manual_review",
-      "affected_span_id": "span_8e524439b1684aa4",
+      "affected_span_id": "span_34348cc49f123629",
       "evidence_fragment": "requires manual review"
     },
     {
       "gold_id": "GOLD-FINDING-006",
       "severity": "Informational",
       "finding_type": "classification_rationale_requires_manual_review",
-      "affected_span_id": "span_a3d42d0561575263",
+      "affected_span_id": "span_79b2f99f4a85ffbd",
       "evidence_fragment": "requires manual review by RA"
     },
     {
       "gold_id": "GOLD-FINDING-007",
       "severity": "Major",
       "finding_type": "claim_without_resolved_source",
-      "affected_span_id": "span_05f0a0e4c6224e9f",
+      "affected_span_id": "span_a624a5422820d068",
       "evidence_fragment": "has no resolved local source"
     }
   ]

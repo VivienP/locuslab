@@ -41,15 +41,15 @@ def _make_doc(document_id: str, kind: DocumentKind = DocumentKind.CER) -> Docume
     )
 
 
-PIVOTAL_SPAN_ID = "span_b0fecd4907e13acc"
-ADVERSE_SPAN_ID = "span_8c8ef5d659e6ba6d"
-TABLE_87_SPAN_ID = "span_f2d247fb17db6de0"
-TABLE_32_SPAN_ID = "span_cddf2fa99a826279"
-DEVICE_DESC_SPAN_ID = "span_a3d42d0561575263"
+PIVOTAL_SPAN_ID = "span_d9abfffa43fb7cbf"
+ADVERSE_SPAN_ID = "span_5066a18e9866378c"
+TABLE_87_SPAN_ID = "span_0f469791718b865b"
+TABLE_32_SPAN_ID = "span_cc33a9b3040be134"
+DEVICE_DESC_SPAN_ID = "span_79b2f99f4a85ffbd"
 SOURCE_P1_SPAN_ID = "span_34348cc49f123629"
 SOURCE_P2_SPAN_ID = "span_d5adf35599369595"
 
-DOC_ID_CER = "doc_1dd5a3cd674157b5"
+DOC_ID_CER = "doc_082f6fd5afc0df84"
 DOC_ID_SOURCE = "doc_faf32261b7e7f62a"
 
 PIVOTAL_TEXT = (

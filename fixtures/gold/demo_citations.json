@@ -11,8 +11,8 @@
   "expected_citations": [
     {
       "gold_id": "GOLD-CITE-001",
-      "source_document_id": "doc_1dd5a3cd674157b5",
-      "source_span_id": "span_b0fecd4907e13acc",
+      "source_document_id": "doc_082f6fd5afc0df84",
+      "source_span_id": "span_d9abfffa43fb7cbf",
       "marker_text": "(Smith et al., 2023)",
       "marker_form": "author_year_parenthetical",
       "expected_resolution_status": "resolved",
@@ -23,8 +23,8 @@
     },
     {
       "gold_id": "GOLD-CITE-002",
-      "source_document_id": "doc_1dd5a3cd674157b5",
-      "source_span_id": "span_05f0a0e4c6224e9f",
+      "source_document_id": "doc_082f6fd5afc0df84",
+      "source_span_id": "span_a624a5422820d068",
       "marker_text": "[1]",
       "marker_form": "numeric_bracketed",
       "expected_resolution_status": "source_unresolved",
@@ -35,8 +35,8 @@
     },
     {
       "gold_id": "GOLD-CITE-003",
-      "source_document_id": "doc_1dd5a3cd674157b5",
-      "source_span_id": "span_f806d14a167a8098",
+      "source_document_id": "doc_082f6fd5afc0df84",
+      "source_span_id": "span_69a3f528ae7051bf",
       "marker_text": "Smith 2023",
       "marker_form": "author_year_table_cell",
       "expected_resolution_status": "resolved",
@@ -47,8 +47,8 @@
     },
     {
       "gold_id": "GOLD-CITE-004",
-      "source_document_id": "doc_1dd5a3cd674157b5",
-      "source_span_id": "span_b4c87ceb0705b8d7",
+      "source_document_id": "doc_082f6fd5afc0df84",
+      "source_span_id": "span_fd86849fd101a31b",
       "marker_text": "Smith 2023",
       "marker_form": "author_year_table_cell",
       "expected_resolution_status": "resolved",

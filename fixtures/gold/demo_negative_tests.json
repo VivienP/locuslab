@@ -9,9 +9,9 @@
       "test_name": "cross_document_numeric_agreement_response_rate",
       "must_not_fire_eco_categories": ["ECO-NUM", "ECO-ALIGN"],
       "anchor_object_ids": [
-        "doc_1dd5a3cd674157b5",
-        "span_b0fecd4907e13acc",
-        "span_f2d247fb17db6de0",
+        "doc_082f6fd5afc0df84",
+        "span_d9abfffa43fb7cbf",
+        "span_0f469791718b865b",
         "doc_faf32261b7e7f62a",
         "span_34348cc49f123629"
       ],
@@ -24,9 +24,9 @@
       "test_name": "cross_document_numeric_agreement_adverse_event_rate",
       "must_not_fire_eco_categories": ["ECO-NUM", "ECO-ALIGN"],
       "anchor_object_ids": [
-        "doc_1dd5a3cd674157b5",
-        "span_8c8ef5d659e6ba6d",
-        "span_cddf2fa99a826279",
+        "doc_082f6fd5afc0df84",
+        "span_5066a18e9866378c",
+        "span_cc33a9b3040be134",
         "doc_faf32261b7e7f62a",
         "span_d5adf35599369595"
       ],
@@ -38,7 +38,7 @@
       "test_name": "population_descriptor_alignment_safety_population_vs_cohort",
       "must_not_fire_eco_categories": ["ECO-ALIGN"],
       "anchor_object_ids": [
-        "span_8c8ef5d659e6ba6d",
+        "span_5066a18e9866378c",
         "span_d5adf35599369595"
       ],
       "rationale": "CER says 'safety population (n=412)', source-study says 'n=412 cohort'. Different wording for the same population with the same denominator. A robust population-alignment check normalizes on n=412 and does NOT fire ECO-ALIGN.",
@@ -49,11 +49,11 @@
       "test_name": "gspr_row_with_present_evidence_document",
       "must_not_fire_eco_categories": ["ECO-COMPLETENESS"],
       "anchor_object_ids": [
-        "span_cf72ad56e8df652e",
-        "span_494ca0a20017643a",
-        "span_fa1fc8693f4e5deb",
-        "span_0f9eb24f1e41c1d5",
-        "span_8e5ab1daa5b4965c"
+        "span_c1251a7df0ad9d32",
+        "span_08c2673b89ba1fea",
+        "span_74c6016b27bdb08b",
+        "span_f5dbba40337034fb",
+        "span_26043a2a081fce82"
       ],
       "rationale": "GSPR-01 row has all five cells populated: GSPR_ID, Requirement, Applicable=Yes, Evidence_Document=CER.docx (file present), Status=Met. No completeness gap; the evidence file resolves.",
       "notes": "Distinguishes GOLD-FINDING-001 (gap) from a complete row. If ECO-COMPLETENESS fires here, the checker is mistaking any GSPR row for a gap."
@@ -63,11 +63,11 @@
       "test_name": "gspr_row_with_present_evidence_document_clinical",
       "must_not_fire_eco_categories": ["ECO-COMPLETENESS"],
       "anchor_object_ids": [
-        "span_57b3198906f8919b",
-        "span_5bd6c4269e1eeaad",
-        "span_8352c215522f88ea",
-        "span_36c9daec4299cd28",
-        "span_faad764683048c84"
+        "span_ad7a16a18ac3ead3",
+        "span_0abe8ab8b4128ae7",
+        "span_c0617db4fae1bc99",
+        "span_6146885a89b728f5",
+        "span_fa824cfb178d8aeb"
       ],
       "rationale": "GSPR-02 row is complete: GSPR-02, Clinical evaluation according to Annex XIV, Applicable=Yes, Evidence_Document=CER.docx (resolves), Status=Met. No gap.",
       "notes": "Second NT for GSPR completeness to guard against single-row coincidence."
@@ -77,9 +77,9 @@
       "test_name": "citation_marker_author_year_resolves_cleanly",
       "must_not_fire_eco_categories": ["ECO-CITE"],
       "anchor_object_ids": [
-        "span_b0fecd4907e13acc",
-        "span_f806d14a167a8098",
-        "span_b4c87ceb0705b8d7",
+        "span_d9abfffa43fb7cbf",
+        "span_69a3f528ae7051bf",
+        "span_fd86849fd101a31b",
         "doc_faf32261b7e7f62a"
       ],
       "rationale": "Three citation markers ('(Smith et al., 2023)' in CER body, 'Smith 2023' in two Appendix A cells) all resolve to bibliography/source-study.pdf. No ECO-CITE unresolved-marker finding should fire on any of them.",
@@ -90,7 +90,7 @@
       "test_name": "claim_with_resolved_evidence_link",
       "must_not_fire_eco_categories": ["ECO-SRC"],
       "anchor_object_ids": [
-        "span_b0fecd4907e13acc",
+        "span_d9abfffa43fb7cbf",
         "span_34348cc49f123629"
       ],
       "rationale": "The pivotal endpoint claim has an explicit (Smith et al., 2023) citation that resolves to source-study.pdf, which contains a matching value (87.4 percent at 12 months). EvidenceLink exists with status='resolved'. No ECO-SRC 'potentially unsupported' finding should fire.",
@@ -101,10 +101,10 @@
       "test_name": "table_cell_value_mirror_should_not_be_treated_as_contradiction",
       "must_not_fire_eco_categories": ["ECO-NUM"],
       "anchor_object_ids": [
-        "span_b0fecd4907e13acc",
-        "span_f2d247fb17db6de0",
-        "span_8c8ef5d659e6ba6d",
-        "span_cddf2fa99a826279"
+        "span_d9abfffa43fb7cbf",
+        "span_0f469791718b865b",
+        "span_5066a18e9866378c",
+        "span_cc33a9b3040be134"
       ],
       "rationale": "Appendix A table cells (87.4% and 3.2%) are intra-document mirrors of body paragraph values, not independent measurements. ECO-NUM should not treat them as two contradicting facts.",
       "notes": "Calibration target: the deduplication strategy for body-vs-table numeric mirrors. If ECO-NUM fires here, every CER will trigger false positives on its own appendix tables."
@@ -113,7 +113,7 @@
       "gold_id": "NT-009",
       "test_name": "readme_md_unsupported_warning_is_not_a_finding",
       "must_not_fire_eco_categories": ["ECO-COMPLETENESS", "ECO-MALFORMED"],
-      "anchor_object_ids": ["doc_3be01493e3e2758a"],
+      "anchor_object_ids": ["doc_10d06a9ffa9d19de"],
       "rationale": "README.md emits one UNSUPPORTED_FILE_TYPE parser warning during ingestion. This is expected behavior, not a finding. No ECO-* should fire on the parser warning itself.",
       "notes": "Parser warnings and ECO findings are different artifacts. Confusing the two would produce constant false positives on every dossier that contains any non-DOCX/PDF/XLSX file."
     }

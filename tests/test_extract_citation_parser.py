@@ -24,12 +24,12 @@ def _make_span(
     )
 
 
-PIVOTAL_SPAN_ID = "span_b0fecd4907e13acc"
-BENEFIT_RISK_SPAN_ID = "span_05f0a0e4c6224e9f"
-TABLE_CITATION_SPAN_ID = "span_f806d14a167a8098"
-TABLE_CITATION_SPAN2_ID = "span_b4c87ceb0705b8d7"
+PIVOTAL_SPAN_ID = "span_d9abfffa43fb7cbf"
+BENEFIT_RISK_SPAN_ID = "span_a624a5422820d068"
+TABLE_CITATION_SPAN_ID = "span_69a3f528ae7051bf"
+TABLE_CITATION_SPAN2_ID = "span_fd86849fd101a31b"
 
-DOC_ID_CER = "doc_1dd5a3cd674157b5"
+DOC_ID_CER = "doc_082f6fd5afc0df84"
 
 PIVOTAL_TEXT = (
     "The primary endpoint response rate of 87.4% (95% CI: 82.1-91.6) "

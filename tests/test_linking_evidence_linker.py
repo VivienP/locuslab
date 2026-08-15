@@ -63,11 +63,11 @@ def _make_source(
     )
 
 
-DOC_ID_CER = "doc_1dd5a3cd674157b5"
-PIVOTAL_SPAN_ID = "span_b0fecd4907e13acc"
-BENEFIT_RISK_SPAN_ID = "span_05f0a0e4c6224e9f"
-DEVICE_DESC_SPAN_ID = "span_a3d42d0561575263"
-GSPR03_SPAN_ID = "span_ecbca6c827a929d4"
+DOC_ID_CER = "doc_082f6fd5afc0df84"
+PIVOTAL_SPAN_ID = "span_d9abfffa43fb7cbf"
+BENEFIT_RISK_SPAN_ID = "span_a624a5422820d068"
+DEVICE_DESC_SPAN_ID = "span_79b2f99f4a85ffbd"
+GSPR03_SPAN_ID = "span_9aecef465e65d326"
 
 
 @pytest.fixture()

@@ -40,7 +40,7 @@ def _make_doc(
 
 
 DOC_ID_SOURCE = "doc_faf32261b7e7f62a"
-DOC_ID_GSPR = "doc_84039664cf6a7d66"
+DOC_ID_GSPR = "doc_8c19005d83747c9a"
 
 SOURCE_P1_TEXT = (
     "Smith J. et al. (2023) Pivotal study of DemoDevice X100. "
@@ -79,7 +79,7 @@ def source_page1_span(source_doc: Document) -> Span:
 def pms_gspr_span(gspr_doc: Document) -> Span:
     # GSPR-03 evidence document cell
     return _make_span(
-        "span_ecbca6c827a929d4",
+        "span_9aecef465e65d326",
         DOC_ID_GSPR,
         "PMS.docx",
         kind=SpanLocationKind.TABLE_CELL,
@@ -91,7 +91,7 @@ def pms_gspr_span(gspr_doc: Document) -> Span:
 def labeling_gspr_span(gspr_doc: Document) -> Span:
     # GSPR-04 evidence document cell
     return _make_span(
-        "span_48f8fa48bdf57f24",
+        "span_2aa7fc1d3d8f114b",
         DOC_ID_GSPR,
         "Labeling.pdf",
         kind=SpanLocationKind.TABLE_CELL,
