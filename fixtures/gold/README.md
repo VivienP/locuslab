@@ -55,7 +55,7 @@ file changes, the gold files in this directory must be reviewed and likely
 regenerated.
 
 - `scripts/seed_demo_fixture.py` SHA-256 at annotation time:
-  `e4a99e69f61a1539022eb9cc0209a9eb8b2274b131fd50f6993e5555340abbc3`
+  `d03610975a9163f5445aa1ed3b05a2e3e93c5da7a518cab1f01554c7e90983d3`
 - Annotation date: 2026-05-22
 - Ingestion produced: 4 documents, 48 spans, 1 parser warning (README.md,
   expected — unsupported file type)

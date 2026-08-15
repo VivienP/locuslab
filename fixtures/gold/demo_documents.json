@@ -2,7 +2,7 @@
   "schema_version": 1,
   "annotation_date": "2026-05-22",
   "fixture_root": "fixtures/demo_dossier",
-  "seed_script_sha256": "e4a99e69f61a1539022eb9cc0209a9eb8b2274b131fd50f6993e5555340abbc3",
+  "seed_script_sha256": "d03610975a9163f5445aa1ed3b05a2e3e93c5da7a518cab1f01554c7e90983d3",
   "purpose": "Regression check on ingestion output. Each entry pins document_id, kind, parser, and warning count for the corresponding file under fixtures/demo_dossier/.",
   "documents": [
     {
