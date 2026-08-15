@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "locuslab-engine"
 version = "0.1.0"
-description = "Local-first MDR/IVDR evidence verification engine scaffolding."
+description = "Local-first MDR/IVDR evidence verification engine."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"

@@ -115,27 +115,18 @@ infrastructure is deferred until finding quality and buyer demand justify it.
 The graph and reports record the resolved dossier root with POSIX separators,
 so relative and absolute invocations of the same local dossier are identical.
 
-## Engine Domain Discipline
+## Domain Scope
 
-The MDR/IVDR document families are the V1 application surface. The engine underneath should stay domain-agnostic so the same pipeline can later verify other scientific outputs (for example CSR, protocol, SAP, clinical-trial claims, biomarker claims, safety narratives, and literature claims) without rewriting ingestion, linking, graph, or audit primitives.
+LocusLab V1 is MDR/IVDR-specific. Its document taxonomy, extraction patterns,
+GSPR routing, SSCP guidance checks, finding categories, and report language all
+encode that regulatory context. Some implementation techniques are reusable,
+including file readers, content hashing, stable identifiers, and canonical
+artifact writers, but no cross-domain compatibility is claimed.
 
-Domain-agnostic layers — must not encode MDR/IVDR vocabulary, enums, or assumptions:
-
-- Core object model: `Document`, `Span`, `Claim`, `Source`, `EvidenceLink`, `Finding`, `AdjudicationEvent`, `AuditRun`.
-- Ingestion readers (`.docx`, `.pdf`, `.xlsx`) and `SpanLocation`.
-- Claim extraction primitives (numeric, citation, classification, performance) and their extraction-method labels.
-- Citation parsing and bibliography resolution.
-- Evidence link status vocabulary (`resolved`, `source_unresolved`, `source_missing`, `manual_review_required`).
-- Graph record shape (`graph.jsonl`/SQLite) and audit manifest schema.
-
-MDR/IVDR-specific layers — domain knowledge belongs here:
-
-- ECO category codes, severity rules, and finding wording.
-- Document-taxonomy heuristics for CER, PMS/PSUR, PMCF, SSCP, GSPR.
-- Checker rule packs and fixtures.
-- Buyer-facing report templates and section labels.
-
-Changes should not push MDR/IVDR vocabulary into the generic primitives, and should not move generic verification logic into the MDR-specific layers. A future non-MDR rule pack should be addable without modifying the domain-agnostic layers above.
+Support for another regulatory or scientific domain would require an explicit
+product specification, public-surface update, implementation, and fixtures.
+The current release does not ship a plugin or rule-pack boundary that would
+make such support automatic.
 
 ## Deferred Complexity
 

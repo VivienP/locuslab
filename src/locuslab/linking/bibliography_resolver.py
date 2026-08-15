@@ -1,12 +1,4 @@
-"""Map citations to Source records via normalized author-year keys.
-
-Engine-domain note: author-year normalization, bibliography-directory scanning,
-and Source record construction are domain-agnostic. The GSPR_MAPPING
-Evidence_Document column scan is MDR/IVDR-specific and should migrate into an
-MDR rule pack when pharma source-reference layouts (e.g. CSR appendix tables,
-TLF cross-references) need their own resolver paths. See
-docs/architecture.md "Engine Domain Discipline".
-"""
+"""Map MDR/IVDR dossier citations to sources via deterministic keys."""
 
 from __future__ import annotations
 

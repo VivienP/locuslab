@@ -42,6 +42,25 @@ def test_dependency_install_contract_uses_pyproject_only() -> None:
     assert 'pip install -e ".[dev]"' in workflow
 
 
+def test_public_scope_descriptions_match_the_shipped_mdr_ivdr_surface() -> None:
+    scoped_paths = (
+        Path("pyproject.toml"),
+        Path("docs/architecture.md"),
+        Path("src/locuslab/__init__.py"),
+        Path("src/locuslab/models.py"),
+        Path("src/locuslab/extract/claim_extractor.py"),
+    )
+
+    for path in scoped_paths:
+        text = path.read_text(encoding="utf-8").lower()
+        assert "scaffolding" not in text, path
+        assert "domain-agnostic" not in text, path
+
+    architecture = Path("docs/architecture.md").read_text(encoding="utf-8")
+    assert "LocusLab V1 is MDR/IVDR-specific" in architecture
+    assert "no cross-domain compatibility is claimed" in architecture
+
+
 def test_project_state_doc_checker_detects_stale_phase_text(tmp_path: Path) -> None:
     for path in (
         "docs/roadmap.md",

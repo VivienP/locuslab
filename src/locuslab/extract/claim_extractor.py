@@ -1,12 +1,4 @@
-"""Deterministic regex + structural claim extraction from spans.
-
-Engine-domain note: numeric, citation, percent/CI, and count extractors are
-domain-agnostic. The classification extractor (Class I/IIa/IIb/III) and the
-GSPR-row completeness extractor (extractor_id ``extract.completeness.gspr:v1``)
-are MDR/IVDR-specific and should migrate into a rule pack
-(``src/locuslab/rules/mdr/``) when pharma extractors are added. See
-docs/architecture.md "Engine Domain Discipline".
-"""
+"""Deterministic claim extraction for the shipped MDR/IVDR dossier surface."""
 
 from __future__ import annotations
 

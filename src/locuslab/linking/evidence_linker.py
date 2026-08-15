@@ -1,12 +1,4 @@
-"""Emit EvidenceLink records with deterministic status assignment.
-
-Engine-domain note: the link status vocabulary and explicit-citation /
-filename-reference rules are domain-agnostic. Rule 4 (COMPLETENESS-claim
-pairing on GSPR row layout) is MDR/IVDR-specific and should migrate into an
-MDR rule pack when pharma completeness rules (e.g. CSR appendix pairing,
-protocol-SAP cross-reference) need their own linker logic. See
-docs/architecture.md "Engine Domain Discipline".
-"""
+"""Emit MDR/IVDR EvidenceLink records with deterministic status assignment."""
 
 from __future__ import annotations
 

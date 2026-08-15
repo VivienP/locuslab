@@ -1,4 +1,4 @@
-"""LocusLab V1 scaffolding package."""
+"""LocusLab local-first MDR/IVDR evidence verification engine."""
 
 from locuslab.models import (
     AdjudicationState,
