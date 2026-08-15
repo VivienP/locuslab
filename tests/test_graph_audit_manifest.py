@@ -253,8 +253,43 @@ class TestManifestPresenceAndShape:
                 "sha256",
                 "parser",
                 "parse_warning_codes",
+                "parse_warnings",
             ):
                 assert key in entry, f"input_documents entry missing {key!r}"
+
+    def test_structured_parser_warnings_are_preserved_across_outputs(
+        self,
+        demo_run: Path,
+        demo_manifest: dict[str, object],
+        demo_graph_records: list[dict[str, object]],
+    ) -> None:
+        report = json.loads((demo_run / "report.json").read_text(encoding="utf-8"))
+        manifest_documents = {
+            document["document_id"]: document
+            for document in demo_manifest["input_documents"]  # type: ignore[union-attr]
+        }
+        report_documents = {
+            document["document_id"]: document
+            for document in report["input_documents"]
+        }
+        graph_documents = {
+            record["document_id"]: record
+            for record in demo_graph_records
+            if record["record_type"] == "document"
+        }
+
+        warned = [
+            document
+            for document in manifest_documents.values()
+            if document["parse_warnings"]
+        ]
+        assert warned, "Demo fixture should retain at least one parser diagnostic"
+        for document in warned:
+            document_id = document["document_id"]
+            warnings = document["parse_warnings"]
+            assert warnings == report_documents[document_id]["parse_warnings"]
+            assert warnings == graph_documents[document_id]["parse_warnings"]
+            assert set(warnings[0]) == {"code", "message", "path", "location"}
 
     def test_known_limitations_match_canonical_list(
         self, demo_manifest: dict[str, object]

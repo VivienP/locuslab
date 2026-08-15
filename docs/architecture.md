@@ -82,6 +82,9 @@ The loader preserves parser diagnostics even for unreadable files. The
 verification pipeline fails before writing a run when the complete dossier
 yields zero usable spans, so corrupt or empty inputs cannot produce a
 successful zero-content audit.
+Manifest, graph, and JSON report document records retain each diagnostic's
+code, message, dossier-relative path, and optional location; the legacy
+`parse_warning_codes` summary remains available for compact consumers.
 
 ## Checker Philosophy
 
